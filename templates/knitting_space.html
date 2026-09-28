@@ -1,0 +1,589 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Your Knitting Space | KnitBlog{% endblock %}
+
+{% block extra_head %}
+<style>
+  .knitting-space{display:flex;gap:24px;align-items:flex-start;padding-bottom:40px;}
+
+  .knitting-sidebar{
+    width:250px;flex-shrink:0;background:#fff;
+    border:1px solid var(--knit-border);border-radius:var(--knit-radius);
+    padding:16px 14px;position:sticky;top:96px;
+    box-shadow:var(--knit-shadow);overflow:hidden;
+  }
+  .knitting-sidebar-title{
+    display:flex;align-items:center;gap:10px;
+    background:var(--knit-gradient);color:#fff;
+    padding:14px 16px;margin:-16px -14px 16px;
+    font-size:13px;font-weight:800;
+    text-transform:uppercase;letter-spacing:.08em;
+  }
+  .knitting-sidebar-title i{font-size:15px;}
+
+  .knitting-sidebar a{
+    display:flex;align-items:center;gap:11px;text-decoration:none;
+    color:var(--knit-text);padding:11px 13px;margin-bottom:3px;border-radius:10px;
+    font-weight:500;font-size:14.8px;
+    transition:background-color .18s ease,color .18s ease;
+  }
+  .knitting-sidebar a i{font-size:16px;width:19px;text-align:center;color:var(--knit-muted);transition:color .18s ease;}
+  .knitting-sidebar a:hover{background:var(--knit-primary-soft);color:var(--knit-primary);}
+  .knitting-sidebar a:hover i{color:var(--knit-primary);}
+  .knitting-sidebar a.active{
+    background:var(--knit-gradient);color:#fff;
+    box-shadow:0 4px 14px rgba(5,122,113,.30);
+  }
+  .knitting-sidebar a.active i{color:#fff;}
+  .knitting-sidebar-divider{height:1px;background:var(--knit-border);margin:10px 8px;}
+  .knit-logout-link{color:#d9534f !important;}
+  .knit-logout-link i{color:#d9534f !important;}
+  .knit-logout-link:hover{background:rgba(217,83,79,.08) !important;color:#c9302c !important;}
+  .knit-logout-link:hover i{color:#c9302c !important;}
+
+  .knitting-content{flex:1;min-width:0;}
+  .knit-page-header{
+    margin-bottom:22px;padding:22px 26px;
+    background:var(--knit-gradient);border-radius:var(--knit-radius);
+    color:#fff;box-shadow:0 8px 22px rgba(5,122,113,.22);
+  }
+  .knit-page-header h1{
+    color:#fff;font-weight:800;font-size:24px;
+    letter-spacing:-.5px;display:flex;align-items:center;gap:10px;margin:0 0 4px;
+  }
+  .knit-page-header h1 i{font-size:20px;opacity:.9;}
+  .knit-page-header p{color:rgba(255,255,255,.88);font-size:14px;margin:0;}
+
+  .knitting-card{
+    background:#fff;border:1px solid var(--knit-border);
+    border-radius:var(--knit-radius);padding:24px;margin-top:20px;
+    box-shadow:var(--knit-shadow);
+  }
+
+  .knitting-post{display:flex;gap:14px;padding:18px 0;border-bottom:1px solid var(--knit-border);}
+  .knitting-post:last-child{border-bottom:none;padding-bottom:0;}
+  .knitting-post-body{flex:1;min-width:0;}
+  .knitting-post-meta{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;}
+  .knitting-post-stats{display:flex;gap:18px;margin-top:10px;font-size:13.5px;color:var(--knit-muted);align-items:center;}
+  .knitting-post-stats i{color:var(--knit-primary);margin-right:4px;}
+
+  .knitting-request{
+    display:flex;align-items:center;gap:14px;justify-content:space-between;
+    padding:15px 4px;border-bottom:1px solid var(--knit-border);border-radius:10px;
+  }
+  .knitting-request:last-child{border-bottom:none;}
+  .knitting-request-info{display:flex;align-items:center;gap:12px;}
+
+  /* Notification rows */
+  .knit-notif{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--knit-border);}
+  .knit-notif:last-child{border-bottom:none;}
+  .knit-notif-icon{
+    width:34px;height:34px;border-radius:50%;flex-shrink:0;
+    background:rgba(224,84,106,.12);color:#e0546a;
+    display:flex;align-items:center;justify-content:center;font-size:15px;
+  }
+  .knit-notif-text{flex:1;font-size:14.5px;line-height:1.5;}
+  .knit-notif-text a{font-weight:700;color:var(--knit-text);}
+  .knit-notif-text a:hover{color:var(--knit-primary);}
+  .knit-notif-text .t{color:var(--knit-primary);font-weight:600;}
+
+  .knit-section-label{
+    font-size:12.5px;font-weight:800;text-transform:uppercase;
+    letter-spacing:.07em;color:var(--knit-primary);
+    display:flex;align-items:center;gap:7px;margin:0 0 8px;
+  }
+
+  @media(max-width:900px){
+    .knitting-space{flex-direction:column;}
+    .knitting-sidebar{width:100%;position:static;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:4px;padding:12px;}
+    .knitting-sidebar-title{display:none;}
+    .knitting-sidebar-divider{width:1px;height:auto;align-self:stretch;margin:4px 6px;}
+    .knitting-sidebar a{flex-shrink:0;margin-bottom:0;white-space:nowrap;}
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="knitting-space">
+  <!-- SIDEBAR -->
+  <aside class="knitting-sidebar">
+    <div class="knitting-sidebar-title"><i class="bi bi-yarn"></i> Knitting Space</div>
+
+    <a href="{% url 'knitting-space' %}?section=home" class="{% if section == 'home' %}active{% endif %}">
+      <i class="bi bi-house-door"></i> Home
+    </a>
+
+    <a href="{% url 'knitting-space' %}?section=my-posts" class="{% if section == 'my-posts' %}active{% endif %}">
+      <i class="bi bi-journal-text"></i> My Posts
+      {% if my_posts %}<span class="knit-stat-chip ms-auto" style="background:rgba(5,122,113,.10);">{{ my_posts|length }}</span>{% endif %}
+    </a>
+
+    <a href="{% url 'knitting-space' %}?section=create-post" class="{% if section == 'create-post' %}active{% endif %}">
+      <i class="bi bi-pencil-square"></i> Create Post
+    </a>
+
+    <a href="{% url 'knitting-space' %}?section=likes" class="{% if section == 'likes' %}active{% endif %}">
+      <i class="bi bi-heart"></i> Likes
+      {% if likes_received %}<span class="knit-stat-chip ms-auto">{{ likes_received|length }}</span>{% endif %}
+    </a>
+
+    <a href="{% url 'knitting-space' %}?section=saved" class="{% if section == 'saved' %}active{% endif %}">
+      <i class="bi bi-bookmark"></i> Saved
+      {% if saved_items %}<span class="knit-stat-chip ms-auto">{{ saved_items|length }}</span>{% endif %}
+    </a>
+
+    <a href="{% url 'knitting-space' %}?section=friend-requests" class="{% if section == 'friend-requests' %}active{% endif %}">
+      <i class="bi bi-person-plus"></i> Requests
+      {% if incoming_requests %}<span class="knit-stat-chip ms-auto">{{ incoming_requests|length }}</span>{% endif %}
+    </a>
+
+    <a href="{% url 'knitting-space' %}?section=friends" class="{% if section == 'friends' %}active{% endif %}">
+      <i class="bi bi-people"></i> Friends
+      {% if my_friends %}<span class="knit-stat-chip ms-auto">{{ my_friends|length }}</span>{% endif %}
+    </a>
+
+    <a href="{% url 'knitting-space' %}?section=discover" class="{% if section == 'discover' %}active{% endif %}">
+      <i class="bi bi-compass"></i> Discover
+    </a>
+
+    <a href="{% url 'knitting-space' %}?section=profile" class="{% if section == 'profile' %}active{% endif %}">
+      <i class="bi bi-person-circle"></i> Profile
+    </a>
+
+    <div class="knitting-sidebar-divider"></div>
+
+    <a href="{% url 'logout' %}" class="knit-logout-link">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="knitting-content">
+
+    {# ================= HOME ================= #}
+    {% if section == 'home' %}
+      <div class="knit-page-header">
+        <h1><i class="bi bi-house-door"></i> Welcome back, {{ user.profile.display_name }}</h1>
+        <p>Here's what's happening in your space.</p>
+      </div>
+
+      <div class="knitting-card knit-card-accent">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <h3 class="knit-card-title mb-0"><i class="bi bi-journal-text"></i> Your recent posts</h3>
+          <a href="{% url 'post-create' %}" class="btn-knit"><i class="bi bi-plus-lg"></i> New post</a>
+        </div>
+
+        {% if my_posts %}
+          {% for post in my_posts|slice:":5" %}
+            <div class="knitting-post">
+              <div class="knit-avatar-sm">{{ post.author.profile.initial }}</div>
+              <div class="knitting-post-body">
+                <div class="knitting-post-meta">
+                  <strong><a href="{{ post.get_absolute_url }}" style="color:inherit;">{{ post.title }}</a></strong>
+                  {% if post.status == 'draft' %}<span class="knit-chip knit-chip-draft">Draft</span>{% endif %}
+                </div>
+                <p class="mb-1 text-muted" style="font-size:14.5px;">{{ post.excerpt|default:post.content|striptags|truncatewords:20 }}</p>
+                <small class="text-muted">{{ post.created_at|naturaltime }}</small>
+                <div class="knitting-post-stats">
+                  <span><i class="bi bi-heart-fill"></i>{{ post.likes.count }}</span>
+                  <span><i class="bi bi-chat-fill"></i>{{ post.comments.count }}</span>
+                  <span><i class="bi bi-eye-fill"></i>{{ post.views }}</span>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="knit-empty">
+            <i class="bi bi-journal"></i>
+            <p>You haven't created any posts yet.</p>
+            <a href="{% url 'post-create' %}" class="btn-knit mt-3"><i class="bi bi-plus-lg"></i> Write your first post</a>
+          </div>
+        {% endif %}
+      </div>
+
+    {# ================= MY POSTS ================= #}
+    {% elif section == 'my-posts' %}
+      <div class="knit-page-header">
+        <h1><i class="bi bi-journal-text"></i> My Posts</h1>
+        <p>Manage everything you've written.</p>
+      </div>
+
+      <div class="knitting-card">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <h3 class="knit-card-title mb-0"><i class="bi bi-collection"></i> {{ my_posts|length }} post{{ my_posts|length|pluralize }}</h3>
+          <a href="{% url 'post-create' %}" class="btn-knit"><i class="bi bi-plus-lg"></i> New post</a>
+        </div>
+
+        {% if my_posts %}
+          {% for post in my_posts %}
+            <div class="knitting-post">
+              <div class="knit-avatar-sm">{{ post.author.profile.initial }}</div>
+              <div class="knitting-post-body">
+                <div class="knitting-post-meta">
+                  <strong><a href="{{ post.get_absolute_url }}" style="color:inherit;">{{ post.title }}</a></strong>
+                  {% if post.status == 'draft' %}<span class="knit-chip knit-chip-draft">Draft</span>{% endif %}
+                  {% if post.original_post %}<span class="knit-chip"><i class="bi bi-arrow-repeat"></i> Shared</span>{% endif %}
+                  {% if post.category %}<span class="knit-chip">{{ post.category.name }}</span>{% endif %}
+                </div>
+                <p class="mb-1 text-muted" style="font-size:14.5px;">{{ post.excerpt|default:post.content|striptags|truncatewords:22 }}</p>
+                <small class="text-muted">{{ post.created_at|naturaltime }} · {{ post.reading_time }} min read</small>
+
+                <div class="knitting-post-stats">
+                  <span><i class="bi bi-heart-fill"></i>{{ post.likes.count }}</span>
+                  <span><i class="bi bi-chat-fill"></i>{{ post.comments.count }}</span>
+                  <span><i class="bi bi-eye-fill"></i>{{ post.views }}</span>
+
+                  <span class="ms-auto d-flex gap-2">
+                    <a href="{% url 'post-update' post.slug %}" class="knit-chip"><i class="bi bi-pencil"></i> Edit</a>
+                    <a href="{% url 'post-delete' post.slug %}" class="knit-chip" style="background:rgba(224,84,106,.10);color:#e0546a;"><i class="bi bi-trash"></i> Delete</a>
+                  </span>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="knit-empty">
+            <i class="bi bi-journal"></i>
+            <p>You haven't created any posts yet.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    {# ================= CREATE POST ================= #}
+    {% elif section == 'create-post' %}
+      <div class="knit-page-header">
+        <h1><i class="bi bi-pencil-square"></i> Create Post</h1>
+        <p>Share something with the community.</p>
+      </div>
+
+      <div class="knitting-card">
+        <form method="POST" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          {% if post_form.errors %}
+            <div class="alert alert-danger mb-3">
+              <strong><i class="bi bi-exclamation-triangle-fill"></i> Please fix the following:</strong>
+              <ul class="mb-0 mt-2">
+                {% for field, errors in post_form.errors.items %}
+                  {% for error in errors %}
+                    <li><strong>{{ field|capfirst }}:</strong> {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ post_form.title.id_for_label }}">Title <span class="text-danger">*</span></label>
+            {{ post_form.title }}
+            {% if post_form.title.errors %}<div class="knit-field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ post_form.title.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Category</label>
+              {{ post_form.category }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              {{ post_form.status }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Excerpt <span class="text-muted fw-normal">(optional)</span></label>
+            {{ post_form.excerpt }}
+            <div class="form-text">A short summary shown in listings.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Content <span class="text-danger">*</span></label>
+            {{ post_form.content }}
+            {% if post_form.content.errors %}<div class="knit-field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ post_form.content.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Featured image</label>
+              {{ post_form.featured_image }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Tags</label>
+              {{ post_form.tags_input }}
+              <div class="form-text">{{ post_form.tags_input.help_text }}</div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-knit"><i class="bi bi-send"></i> Publish post</button>
+        </form>
+      </div>
+
+    {# ================= LIKES ================= #}
+    {% elif section == 'likes' %}
+      <div class="knit-page-header">
+        <h1><i class="bi bi-heart"></i> Likes</h1>
+        <p>Likes you've received and posts you've liked.</p>
+      </div>
+
+      <!-- PART 1: who liked my posts -->
+      <div class="knitting-card">
+        <p class="knit-section-label"><i class="bi bi-bell-fill"></i> Recent likes on your posts</p>
+
+        {% if likes_received %}
+          {% for like in likes_received %}
+            <div class="knit-notif">
+              <div class="knit-notif-icon"><i class="bi bi-heart-fill"></i></div>
+              <span class="knit-avatar-sm">
+                {% if like.user.profile.avatar %}<img src="{{ like.user.profile.avatar.url }}" alt="" />
+                {% else %}{{ like.user.profile.initial }}{% endif %}
+              </span>
+              <div class="knit-notif-text">
+                <a href="{% url 'profile-detail' like.user.username %}">{{ like.user.profile.display_name }}</a>
+                liked your post
+                <a href="{{ like.post.get_absolute_url }}" class="t">"{{ like.post.title }}"</a>
+                <div><small class="text-muted">{{ like.created_at|naturaltime }}</small></div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="knit-empty">
+            <i class="bi bi-bell"></i>
+            <p>No likes on your posts yet.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- PART 2: posts I liked -->
+      <div class="knitting-card">
+        <p class="knit-section-label"><i class="bi bi-hand-thumbs-up-fill"></i> Posts you've liked</p>
+
+        {% if liked_posts %}
+          {% for post in liked_posts %}
+            <div class="knitting-post">
+              <div class="knit-avatar-sm">{{ post.author.profile.initial }}</div>
+              <div class="knitting-post-body">
+                <div class="knitting-post-meta">
+                  <strong><a href="{{ post.get_absolute_url }}" style="color:inherit;">{{ post.title }}</a></strong>
+                  <small class="text-muted">by {{ post.author.profile.display_name }}</small>
+                </div>
+                <p class="mb-1 text-muted" style="font-size:14.5px;">{{ post.excerpt|default:post.content|striptags|truncatewords:22 }}</p>
+                <small class="text-muted">{{ post.created_at|naturaltime }}</small>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="knit-empty">
+            <i class="bi bi-heart"></i>
+            <p>You haven't liked any posts yet.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    {# ================= SAVED ================= #}
+    {% elif section == 'saved' %}
+      <div class="knit-page-header">
+        <h1><i class="bi bi-bookmark"></i> Saved Posts</h1>
+        <p>Your private collection.</p>
+      </div>
+
+      <div class="knitting-card">
+        {% if saved_items %}
+          {% for item in saved_items %}
+            <div class="knitting-post">
+              <div class="knit-avatar-sm">{{ item.post.author.profile.initial }}</div>
+              <div class="knitting-post-body">
+                <div class="knitting-post-meta">
+                  <strong><a href="{{ item.post.get_absolute_url }}" style="color:inherit;">{{ item.post.title }}</a></strong>
+                  {% if item.post.category %}<span class="knit-chip">{{ item.post.category.name }}</span>{% endif %}
+                </div>
+                <p class="mb-1 text-muted" style="font-size:14.5px;">
+                  {{ item.post.excerpt|default:item.post.content|striptags|truncatewords:22 }}
+                </p>
+                <small class="text-muted">
+                  by
+                  <a href="{% url 'profile-detail' item.post.author.username %}">{{ item.post.author.profile.display_name }}</a>
+                  · saved {{ item.created_at|naturaltime }}
+                </small>
+
+                <div class="knitting-post-stats">
+                  <span><i class="bi bi-heart-fill"></i>{{ item.post.likes.count }}</span>
+                  <span><i class="bi bi-chat-fill"></i>{{ item.post.comments.count }}</span>
+
+                  <span class="ms-auto">
+                    <form action="{% url 'save-post' item.post.id %}" method="POST" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="knit-chip" style="background:rgba(224,84,106,.10);color:#e0546a;">
+                        <i class="bi bi-bookmark-x"></i> Remove
+                      </button>
+                    </form>
+                  </span>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="knit-empty">
+            <i class="bi bi-bookmark"></i>
+            <p>You haven't saved any posts yet.</p>
+            <a href="{% url 'post-list' %}" class="btn-knit mt-3"><i class="bi bi-journals"></i> Browse posts</a>
+          </div>
+        {% endif %}
+      </div>
+
+    {# ================= FRIEND REQUESTS ================= #}
+    {% elif section == 'friend-requests' %}
+      <div class="knit-page-header">
+        <h1><i class="bi bi-person-plus"></i> Friend Requests</h1>
+        <p>People who want to connect with you.</p>
+      </div>
+
+      <div class="knitting-card">
+        {% if incoming_requests %}
+          {% for req in incoming_requests %}
+            <div class="knitting-request">
+              <div class="knitting-request-info">
+                <div class="knit-avatar-sm">
+                  {% if req.sender.profile.avatar %}<img src="{{ req.sender.profile.avatar.url }}" alt="" />
+                  {% else %}{{ req.sender.profile.initial }}{% endif %}
+                </div>
+                <div>
+                  <strong>{{ req.sender.profile.display_name }}</strong>
+                  <small class="text-muted d-block">@{{ req.sender.username }} · wants to be your friend</small>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <a href="{% url 'accept-friend-request' req.id %}" class="btn-knit"><i class="bi bi-check-lg"></i> Accept</a>
+                <a href="{% url 'remove-friend' req.sender.id %}" class="btn-knit-outline"><i class="bi bi-x-lg"></i></a>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="knit-empty">
+            <i class="bi bi-person-check"></i>
+            <p>You don't have any pending friend requests.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    {# ================= FRIENDS ================= #}
+    {% elif section == 'friends' %}
+      <div class="knit-page-header">
+        <h1><i class="bi bi-people"></i> Friends</h1>
+        <p>People you're connected with.</p>
+      </div>
+
+      <div class="knitting-card">
+        {% if my_friends %}
+          {% for friend in my_friends %}
+            <div class="knitting-request">
+              <div class="knitting-request-info">
+                <div class="knit-avatar-sm">
+                  {% if friend.profile.avatar %}<img src="{{ friend.profile.avatar.url }}" alt="" />
+                  {% else %}{{ friend.profile.initial }}{% endif %}
+                </div>
+                <div>
+                  <strong>{{ friend.profile.display_name }}</strong>
+                  <small class="text-muted d-block">@{{ friend.username }}</small>
+                </div>
+              </div>
+              <a href="{% url 'profile-detail' friend.username %}" class="btn-knit-outline">
+                <i class="bi bi-eye"></i> View
+              </a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="knit-empty">
+            <i class="bi bi-people"></i>
+            <p>No friends yet.</p>
+            <a href="{% url 'knitting-space' %}?section=discover" class="btn-knit mt-3"><i class="bi bi-compass"></i> Discover people</a>
+          </div>
+        {% endif %}
+      </div>
+
+    {# ================= DISCOVER ================= #}
+    {% elif section == 'discover' %}
+      <div class="knit-page-header">
+        <h1><i class="bi bi-compass"></i> Discover Knitters</h1>
+        <p>Find and follow other people on KnitBlog.</p>
+      </div>
+
+      <div class="knitting-card">
+        {% if users %}
+          {% for person in users %}
+            <div class="knitting-request">
+              <div class="knitting-request-info">
+                <div class="knit-avatar-sm">
+                  {% if person.profile.avatar %}<img src="{{ person.profile.avatar.url }}" alt="" />
+                  {% else %}{{ person.profile.initial }}{% endif %}
+                </div>
+                <div>
+                  <strong>{{ person.profile.display_name }}</strong>
+                  <small class="text-muted d-block">@{{ person.username }}</small>
+                </div>
+              </div>
+              <a href="{% url 'profile-detail' person.username %}" class="btn-knit-outline"><i class="bi bi-eye"></i> View</a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="knit-empty">
+            <i class="bi bi-compass"></i>
+            <p>No other knitters found.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    {# ================= PROFILE ================= #}
+    {% elif section == 'profile' %}
+      <div class="knit-page-header">
+        <h1><i class="bi bi-person-circle"></i> Profile</h1>
+        <p>Your public KnitBlog identity.</p>
+      </div>
+
+      <div class="knitting-card">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+          <div class="d-flex gap-3 align-items-center">
+            <div class="knit-avatar-lg">
+              {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="" />
+              {% else %}{{ user.profile.initial }}{% endif %}
+            </div>
+            <div>
+              <h3 class="mb-1" style="font-weight:800;">{{ user.profile.display_name }}</h3>
+              <p class="text-muted mb-2">@{{ user.username }}</p>
+              {% if user.profile.bio %}<p class="mb-0">{{ user.profile.bio }}</p>
+              {% else %}<p class="text-muted mb-0">No bio added yet.</p>{% endif %}
+              <div class="d-flex gap-3 mt-2 flex-wrap">
+                {% if user.profile.location %}<span class="text-muted" style="font-size:13.5px;"><i class="bi bi-geo-alt"></i> {{ user.profile.location }}</span>{% endif %}
+                {% if user.profile.website %}<a href="{{ user.profile.website }}" target="_blank" rel="noopener" style="font-size:13.5px;"><i class="bi bi-link-45deg"></i> {{ user.profile.website }}</a>{% endif %}
+              </div>
+            </div>
+          </div>
+          <a href="{% url 'knitting-space' %}?section=profile&edit=true" class="btn-knit-outline"><i class="bi bi-pencil"></i> Edit Profile</a>
+        </div>
+      </div>
+
+      {% if edit_profile %}
+        <div class="knitting-card">
+          <h3 class="knit-card-title"><i class="bi bi-sliders"></i> Edit Profile</h3>
+          <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-6"><label class="form-label">Name</label>{{ profile_form.name }}</div>
+              <div class="col-md-6"><label class="form-label">Avatar</label>{{ profile_form.avatar }}</div>
+              <div class="col-md-6"><label class="form-label">Location</label>{{ profile_form.location }}</div>
+              <div class="col-md-6"><label class="form-label">Website</label>{{ profile_form.website }}</div>
+              <div class="col-12"><label class="form-label">Bio</label>{{ profile_form.bio }}</div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn-knit"><i class="bi bi-check-lg"></i> Save Changes</button>
+              <a href="{% url 'knitting-space' %}?section=profile" class="btn-knit-outline">Cancel</a>
+            </div>
+          </form>
+        </div>
+      {% endif %}
+
+    {% endif %}
+  </main>
+</div>
+{% endblock %}

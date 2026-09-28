@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Search{% if query %} — “{{ query }}”{% endif %} | KnitBlog{% endblock %}
+
+{% block body %}
+<div style="max-width:900px;margin:0 auto;">
+  <h1 style="font-size:30px;font-weight:800;letter-spacing:-.7px;margin:0 0 6px;">Search</h1>
+  <p class="text-muted" style="font-size:15px;margin:0 0 22px;">Find posts by title, content, tag, category or author.</p>
+
+  <form method="GET" class="mb-4">
+    <div class="d-flex gap-2">
+      <input type="search" name="q" value="{{ query }}" class="form-control" placeholder="What are you looking for?" autofocus />
+      <button type="submit" class="btn-knit"><i class="bi bi-search"></i> Search</button>
+    </div>
+  </form>
+
+  {% if query %}
+    <p class="text-muted" style="font-size:14.5px;">
+      <strong>{{ result_count }}</strong> result{{ result_count|pluralize }} for “{{ query }}”
+    </p>
+
+    {% if page_obj.object_list %}
+      <div class="knit-post-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px;">
+        {% for post in page_obj %}
+          {% include '_post_card.html' with post=post %}
+        {% endfor %}
+      </div>
+
+      {% if page_obj.has_other_pages %}
+        <nav class="knit-pagination">
+          {% if page_obj.has_previous %}<a href="?q={{ query }}&page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a>{% endif %}
+          {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}<span class="current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}<a href="?q={{ query }}&page={{ num }}">{{ num }}</a>{% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}<a href="?q={{ query }}&page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a>{% endif %}
+        </nav>
+      {% endif %}
+    {% else %}
+      <div class="knit-card knit-empty">
+        <i class="bi bi-search"></i>
+        <p>No posts matched “{{ query }}”. Try different keywords.</p>
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

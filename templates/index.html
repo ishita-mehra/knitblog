@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}KnitBlog — Share, Connect, Keep Close{% endblock %}
+{% block meta_description %}KnitBlog is a simple social blogging space. Read fresh stories, share your thoughts, and connect with people who matter.{% endblock %}
+{% block og_title %}KnitBlog — Share, Connect, Keep Close{% endblock %}
+
+{% block extra_head %}
+<style>
+  .knit-hero{
+    background:#fff;border-radius:26px;overflow:hidden;
+    box-shadow:var(--knit-shadow);margin-bottom:26px;
+  }
+  .knit-hero-inner{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:56px 60px;gap:40px;
+  }
+  .knit-hero-text{flex:1;min-width:0;}
+  .knit-hero-text h1{
+    font-size:46px;font-weight:800;line-height:1.12;
+    color:var(--knit-text);margin:0 0 20px;letter-spacing:-1px;
+  }
+  .knit-hero-text h1 span{color:var(--knit-primary);}
+  .knit-hero-text p{
+    font-size:17.5px;line-height:1.7;color:var(--knit-muted);
+    max-width:520px;margin:0 0 30px;
+  }
+  .knit-hero-actions{display:flex;gap:12px;flex-wrap:wrap;}
+  .knit-hero-image{flex:0 0 42%;display:flex;align-items:center;justify-content:center;}
+  .knit-hero-image img{max-width:100%;max-height:360px;object-fit:contain;}
+
+  .knit-section-head{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    margin:44px 0 22px;gap:16px;flex-wrap:wrap;
+  }
+  .knit-section-head h2{
+    font-size:26px;font-weight:800;color:var(--knit-text);margin:0;
+    letter-spacing:-.5px;
+  }
+  .knit-section-head p{margin:4px 0 0;color:var(--knit-muted);font-size:15px;}
+
+  .knit-post-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
+    gap:22px;
+  }
+
+  .knit-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;}
+  .knit-feature{
+    background:#fff;border:1px solid var(--knit-border);border-radius:18px;
+    padding:26px 24px;box-shadow:var(--knit-shadow);
+    transition:transform .22s ease,box-shadow .22s ease;
+  }
+  .knit-feature:hover{transform:translateY(-4px);box-shadow:0 14px 32px rgba(15,40,38,.11);}
+  .knit-feature-icon{
+    width:50px;height:50px;border-radius:14px;background:var(--knit-primary-soft);
+    color:var(--knit-primary);display:flex;align-items:center;justify-content:center;
+    font-size:22px;margin-bottom:16px;
+  }
+  .knit-feature h3{font-size:17px;font-weight:700;margin:0 0 8px;color:var(--knit-text);}
+  .knit-feature p{font-size:14.5px;line-height:1.65;color:var(--knit-muted);margin:0;}
+
+  .knit-tag-cloud{display:flex;flex-wrap:wrap;gap:8px;}
+
+  @media(max-width:900px){
+    .knit-hero-inner{flex-direction:column;padding:40px 28px;text-align:center;}
+    .knit-hero-text h1{font-size:34px;}
+    .knit-hero-text p{margin-left:auto;margin-right:auto;}
+    .knit-hero-actions{justify-content:center;}
+    .knit-hero-image{flex:0 0 auto;width:100%;}
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- ============ HERO ============ -->
+<section class="knit-hero">
+  <div class="knit-hero-inner">
+    <div class="knit-hero-text">
+      <h1>Stay connected,<br /><span>stay close.</span></h1>
+      <p>Share your thoughts, publish your writing, and have meaningful conversations in a simple space designed for real connections.</p>
+
+      <div class="knit-hero-actions">
+        {% if user.is_authenticated %}
+          <a href="{% url 'post-create' %}" class="btn-knit"><i class="bi bi-pencil-square"></i> Write a post</a>
+          <a href="{% url 'post-list' %}" class="btn-knit-outline"><i class="bi bi-journals"></i> Explore blog</a>
+        {% else %}
+          <a href="{% url 'get-started' %}" class="btn-knit"><i class="bi bi-yarn"></i> Start Knitting</a>
+          <a href="{% url 'post-list' %}" class="btn-knit-outline">Read the blog</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="knit-hero-image">
+      <img src="{% static 'img_1.png' %}" alt="KnitBlog illustration" />
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section>
+  <div class="knit-section-head">
+    <div>
+      <h2>Everything you need</h2>
+      <p>Write, publish, connect and grow — all in one place.</p>
+    </div>
+  </div>
+
+  <div class="knit-features">
+    <div class="knit-feature">
+      <div class="knit-feature-icon"><i class="bi bi-pencil-square"></i></div>
+      <h3>Rich writing</h3>
+      <p>Format beautifully with headings, lists, quotes, images and links — straight from your browser.</p>
+    </div>
+    <div class="knit-feature">
+      <div class="knit-feature-icon"><i class="bi bi-tags"></i></div>
+      <h3>Categories &amp; tags</h3>
+      <p>Organize posts into categories and tags so readers can find exactly what interests them.</p>
+    </div>
+    <div class="knit-feature">
+      <div class="knit-feature-icon"><i class="bi bi-chat-square-text"></i></div>
+      <h3>Threaded comments</h3>
+      <p>Readers can reply to each other, turning your posts into real conversations.</p>
+    </div>
+    <div class="knit-feature">
+      <div class="knit-feature-icon"><i class="bi bi-people"></i></div>
+      <h3>Friends &amp; likes</h3>
+      <p>Send friend requests, like posts and share them with your own followers.</p>
+    </div>
+    <div class="knit-feature">
+      <div class="knit-feature-icon"><i class="bi bi-search"></i></div>
+      <h3>Powerful search</h3>
+      <p>Search across titles, content, tags, categories and authors in an instant.</p>
+    </div>
+    <div class="knit-feature">
+      <div class="knit-feature-icon"><i class="bi bi-rss"></i></div>
+      <h3>RSS &amp; SEO</h3>
+      <p>Auto-generated sitemap, Open Graph previews and an RSS feed — built in.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LATEST POSTS ============ -->
+<section>
+  <div class="knit-section-head">
+    <div>
+      <h2>Latest from the blog</h2>
+      <p>Fresh writing from the community.</p>
+    </div>
+    <a href="{% url 'post-list' %}" class="btn-knit-outline">View all <i class="bi bi-arrow-right"></i></a>
+  </div>
+
+  {% if latest_posts %}
+    <div class="knit-post-grid">
+      {% for post in latest_posts %}
+        {% include '_post_card.html' with post=post %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="knit-card knit-empty">
+      <i class="bi bi-journal-text"></i>
+      <p>No posts published yet. Be the first to write something!</p>
+    </div>
+  {% endif %}
+</section>
+
+<!-- ============ TAXONOMY ============ -->
+{% if categories or popular_tags %}
+<section>
+  <div class="knit-section-head">
+    <div>
+      <h2>Browse by topic</h2>
+      <p>Jump straight into what you love reading.</p>
+    </div>
+  </div>
+
+  <div class="knit-card">
+    {% if categories %}
+      <div class="mb-4">
+        <h4 class="knit-card-title"><i class="bi bi-folder2-open"></i> Categories</h4>
+        <div class="knit-tag-cloud">
+          {% for c in categories %}
+            <a href="{{ c.get_absolute_url }}" class="knit-chip">{{ c.name }} <span class="opacity-75">{{ c.n }}</span></a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if popular_tags %}
+      <div>
+        <h4 class="knit-card-title"><i class="bi bi-hash"></i> Popular tags</h4>
+        <div class="knit-tag-cloud">
+          {% for t in popular_tags %}
+            <a href="{{ t.get_absolute_url }}" class="knit-chip">#{{ t.name }} <span class="opacity-75">{{ t.n }}</span></a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

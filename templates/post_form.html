@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_edit %}Edit Post{% else %}New Post{% endif %} | KnitBlog{% endblock %}
+
+{% block extra_head %}
+<style>
+  .knit-form-wrap{max-width:880px;margin:0 auto;}
+  .knit-form-head{
+    margin-bottom:22px;padding:26px 30px;
+    background:var(--knit-gradient);
+    border-radius:var(--knit-radius);
+    color:#fff;
+    box-shadow:0 8px 22px rgba(5,122,113,.22);
+  }
+  .knit-form-head h1{font-size:26px;font-weight:800;letter-spacing:-.6px;margin:0 0 4px;color:#fff;}
+  .knit-form-head p{color:rgba(255,255,255,.88);font-size:14.5px;margin:0;}
+  .knit-form-actions{
+    display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;
+    margin-top:24px;padding-top:22px;border-top:1px solid var(--knit-border);
+  }
+  .knit-form-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media(max-width:700px){ .knit-form-row{grid-template-columns:1fr;} }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="knit-form-wrap">
+  <div class="knit-form-head">
+    <h1>{% if is_edit %}Edit post{% else %}Write a new post{% endif %}</h1>
+    <p>{% if is_edit %}Update your story and save changes.{% else %}Share something worth reading.{% endif %}</p>
+  </div>
+
+  <div class="knit-card">
+    <form method="POST" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      {% if form.errors %}
+        <div class="alert alert-danger mb-3">
+          <strong><i class="bi bi-exclamation-triangle-fill"></i> Please fix the following:</strong>
+          <ul class="mb-0 mt-2">
+            {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                <li><strong>{{ field|capfirst }}:</strong> {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="knit-field-error mb-3"><i class="bi bi-exclamation-circle-fill"></i> {{ form.non_field_errors.0 }}</div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.title.id_for_label }}">Title <span class="text-danger">*</span></label>
+        {{ form.title }}
+        {% if form.title.errors %}<div class="knit-field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ form.title.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="knit-form-row mb-3">
+        <div>
+          <label class="form-label" for="{{ form.category.id_for_label }}">Category</label>
+          {{ form.category }}
+          {% if form.category.errors %}<div class="knit-field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ form.category.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.status.id_for_label }}">Status</label>
+          {{ form.status }}
+          {% if form.status.errors %}<div class="knit-field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ form.status.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.excerpt.id_for_label }}">Excerpt <span class="text-muted fw-normal">(optional)</span></label>
+        {{ form.excerpt }}
+        <div class="form-text">A short summary shown in listings.</div>
+        {% if form.excerpt.errors %}<div class="knit-field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ form.excerpt.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.content.id_for_label }}">Content <span class="text-danger">*</span></label>
+        {{ form.content }}
+        {% if form.content.errors %}<div class="knit-field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ form.content.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="knit-form-row mb-3">
+        <div>
+          <label class="form-label" for="{{ form.featured_image.id_for_label }}">Featured image</label>
+          {{ form.featured_image }}
+          {% if form.featured_image.errors %}<div class="knit-field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ form.featured_image.errors.0 }}</div>{% endif %}
+          {% if is_edit and post.featured_image %}
+            <div class="mt-2"><img src="{{ post.featured_image.url }}" alt="" style="max-height:110px;border-radius:10px;" /></div>
+          {% endif %}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.tags_input.id_for_label }}">Tags</label>
+          {{ form.tags_input }}
+          <div class="form-text">{{ form.tags_input.help_text }}</div>
+          {% if form.tags_input.errors %}<div class="knit-field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ form.tags_input.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="knit-form-actions">
+        <a href="{% if is_edit %}{{ post.get_absolute_url }}{% else %}{% url 'knitting-space' %}{% endif %}" class="btn-knit-outline">Cancel</a>
+        <button type="submit" class="btn-knit">
+          <i class="bi bi-check-lg"></i> {% if is_edit %}Save changes{% else %}Publish post{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ profile_user.profile.display_name }} | KnitBlog{% endblock %}
+{% block meta_description %}{{ profile_user.profile.bio|default:"Read posts from this author on KnitBlog." }}{% endblock %}
+{% block og_title %}{{ profile_user.profile.display_name }} on KnitBlog{% endblock %}
+
+{% block extra_head %}
+<style>
+  .knit-profile-band{
+    background:#fff;border:1px solid var(--knit-border);border-radius:22px;
+    padding:32px 36px;box-shadow:var(--knit-shadow);margin-bottom:24px;
+  }
+  .knit-profile-band-inner{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+  .knit-profile-band-info{flex:1;min-width:220px;}
+  .knit-profile-band-info h2{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:0 0 2px;}
+  .knit-stat-chip{
+    background:var(--knit-primary-soft);color:var(--knit-primary);
+    border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;
+    display:inline-block;margin-right:8px;margin-top:6px;
+  }
+  .knit-stat-chip b{color:var(--knit-primary-dark);}
+
+  /* Pills */
+  .knit-tabs{display:flex;gap:8px;margin-bottom:20px;}
+  .knit-tab{
+    padding:9px 20px;border-radius:12px;
+    font-size:14.5px;font-weight:600;cursor:pointer;
+    border:1.5px solid var(--knit-border);background:#fff;
+    color:var(--knit-text);text-decoration:none;
+    transition:all .18s ease;
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .knit-tab:hover{background:var(--knit-primary-soft);color:var(--knit-primary);border-color:var(--knit-primary);}
+  .knit-tab.active{background:var(--knit-gradient);color:#fff;border-color:var(--knit-primary);box-shadow:0 4px 12px rgba(5,122,113,.24);}
+  .knit-tab .badge{background:rgba(255,255,255,.22);color:inherit;border-radius:20px;padding:2px 8px;font-size:11.5px;}
+  .knit-tab:not(.active) .badge{background:var(--knit-primary-soft);color:var(--knit-primary);}
+
+  .knit-feed{display:flex;flex-direction:column;gap:16px;}
+  .knit-post{
+    background:#fff;border:1px solid var(--knit-border);border-radius:16px;
+    padding:22px;box-shadow:var(--knit-shadow);
+  }
+  .knit-post h3{font-size:19px;font-weight:700;margin:0 0 8px;}
+  .knit-post h3 a{color:var(--knit-text);}
+  .knit-post h3 a:hover{color:var(--knit-primary);}
+  .knit-comment{background:var(--knit-primary-softer);border-radius:10px;padding:8px 12px;}
+
+  /* Repost wrapper */
+  .knit-repost{
+    background:#fff;border:1px solid var(--knit-border);border-radius:16px;
+    box-shadow:var(--knit-shadow);overflow:hidden;
+  }
+  .knit-repost-head{
+    display:flex;align-items:center;gap:10px;
+    padding:14px 18px;background:var(--knit-primary-softer);
+    border-bottom:1px solid var(--knit-border);
+    font-size:14px;color:var(--knit-muted);
+  }
+  .knit-repost-head .name{color:var(--knit-text);font-weight:700;}
+  .knit-repost-inner{padding:18px 20px;}
+  .knit-repost-inner h4{font-size:17.5px;font-weight:700;margin:6px 0 6px;}
+  .knit-repost-inner h4 a{color:var(--knit-text);}
+  .knit-repost-inner h4 a:hover{color:var(--knit-primary);}
+  .knit-repost-inner .orig-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;color:var(--knit-muted);}
+  .knit-repost-inner .orig-meta .knit-avatar-xs{width:22px;height:22px;font-size:10px;}
+
+  /* Friends panel */
+  .knit-friends-panel{margin-top:28px;}
+  .knit-friend-row{
+    display:flex;align-items:center;gap:14px;
+    padding:14px 4px;border-bottom:1px solid var(--knit-border);
+  }
+  .knit-friend-row:last-child{border-bottom:none;}
+</style>
+{% endblock %}
+
+{% block body %}
+<div style="max-width:820px;margin:0 auto;">
+  <div class="knit-profile-band">
+    <div class="knit-profile-band-inner">
+      <div class="knit-avatar-lg">
+        {% if profile_user.profile.avatar %}<img src="{{ profile_user.profile.avatar.url }}" alt="" />
+        {% else %}{{ profile_user.profile.initial }}{% endif %}
+      </div>
+
+      <div class="knit-profile-band-info">
+        <h2>{{ profile_user.profile.display_name }}</h2>
+        <p class="text-muted mb-2">@{{ profile_user.username }}</p>
+        <p class="mb-2">{{ profile_user.profile.bio|default:"No bio provided yet." }}</p>
+        <div class="d-flex gap-3 flex-wrap mb-1">
+          {% if profile_user.profile.location %}<span class="text-muted" style="font-size:13.5px;"><i class="bi bi-geo-alt"></i> {{ profile_user.profile.location }}</span>{% endif %}
+          {% if profile_user.profile.website %}<a href="{{ profile_user.profile.website }}" target="_blank" rel="noopener" style="font-size:13.5px;"><i class="bi bi-link-45deg"></i> Website</a>{% endif %}
+        </div>
+        <div>
+          <span class="knit-stat-chip"><b>{{ total_posts }}</b> Posts</span>
+          <span class="knit-stat-chip"><b>{{ total_shares }}</b> Shares</span>
+          <span class="knit-stat-chip"><b>{{ friends_count }}</b> Friends</span>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        {% if request.user == profile_user %}
+          <a href="{% url 'edit-profile' %}" class="btn-knit-outline"><i class="bi bi-pencil"></i> Edit profile</a>
+        {% elif request.user.is_authenticated %}
+          {% if friend_status == 'friends' %}
+            <form action="{% url 'remove-friend' profile_user.id %}" method="POST" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn-knit-outline" style="border-color:#e0546a;color:#e0546a;"><i class="bi bi-person-dash"></i> Unfriend</button>
+            </form>
+          {% elif friend_status == 'sent' %}
+            <form action="{% url 'remove-friend' profile_user.id %}" method="POST" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn-knit-outline">Cancel request</button>
+            </form>
+          {% elif friend_status == 'received' %}
+            <form action="{% url 'accept-friend-request' incoming_request_id %}" method="POST" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn-knit"><i class="bi bi-check-lg"></i> Accept</button>
+            </form>
+            <form action="{% url 'remove-friend' profile_user.id %}" method="POST" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn-knit-outline" style="border-color:#e0546a;color:#e0546a;">Reject</button>
+            </form>
+          {% else %}
+            <form action="{% url 'send-friend-request' profile_user.id %}" method="POST" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn-knit"><i class="bi bi-person-plus"></i> Add friend</button>
+            </form>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TABS ============ -->
+  <div class="knit-tabs">
+    <button class="knit-tab active" data-pane="posts-pane">
+      <i class="bi bi-journal-text"></i> Posts
+      <span class="badge">{{ original_posts|length }}</span>
+    </button>
+    <button class="knit-tab" data-pane="shares-pane">
+      <i class="bi bi-arrow-repeat"></i> Shares
+      <span class="badge">{{ shared_posts|length }}</span>
+    </button>
+  </div>
+
+  <!-- ============ POSTS PANE ============ -->
+  <div id="posts-pane" class="knit-tab-pane">
+    <div class="knit-feed">
+      {% for post in original_posts %}
+        <article class="knit-post">
+          <div class="d-flex gap-2 flex-wrap mb-2">
+            {% if post.category %}<a href="{{ post.category.get_absolute_url }}" class="knit-chip">{{ post.category.name }}</a>{% endif %}
+            {% if post.status == 'draft' %}<span class="knit-chip knit-chip-draft">Draft</span>{% endif %}
+          </div>
+
+          <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+          <p class="text-muted" style="font-size:14.8px;line-height:1.65;">{{ post.excerpt|default:post.content|striptags|truncatewords:30 }}</p>
+          <small class="text-muted">{{ post.created_at|naturaltime }} · {{ post.reading_time }} min read · {{ post.views }} views</small>
+
+          <div class="d-flex gap-3 mt-3" style="font-size:13.5px;color:var(--knit-muted);">
+            <span><i class="bi bi-heart-fill" style="color:var(--knit-primary);"></i> {{ post.likes.count }}</span>
+            <span><i class="bi bi-chat-fill" style="color:var(--knit-primary);"></i> {{ post.comments.count }}</span>
+            <span><i class="bi bi-arrow-repeat" style="color:var(--knit-primary);"></i> {{ post.shares.count }}</span>
+          </div>
+        </article>
+      {% empty %}
+        <div class="knit-card knit-empty">
+          <i class="bi bi-journal"></i>
+          <p>No posts yet.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ============ SHARES PANE ============ -->
+  <div id="shares-pane" class="knit-tab-pane" style="display:none;">
+    <div class="knit-feed">
+      {% for post in shared_posts %}
+        <article class="knit-repost">
+          <div class="knit-repost-head">
+            <i class="bi bi-arrow-repeat" style="color:var(--knit-primary);"></i>
+            <span class="name">{{ profile_user.profile.display_name }}</span> shared
+            <small class="ms-auto">{{ post.created_at|naturaltime }}</small>
+          </div>
+
+          {% if post.original_post %}
+            <div class="knit-repost-inner">
+              <div class="orig-meta">
+                <span class="knit-avatar-xs">
+                  {% if post.original_post.author.profile.avatar %}
+                    <img src="{{ post.original_post.author.profile.avatar.url }}" alt="" />
+                  {% else %}{{ post.original_post.author.profile.initial }}{% endif %}
+                </span>
+                <a href="{% url 'profile-detail' post.original_post.author.username %}">
+                  {{ post.original_post.author.profile.display_name }}
+                </a>
+                <span>·</span>
+                <span>{{ post.original_post.created_at|naturaltime }}</span>
+              </div>
+
+              <h4><a href="{{ post.original_post.get_absolute_url }}">{{ post.original_post.title }}</a></h4>
+              <p class="text-muted" style="font-size:14.8px;line-height:1.65;margin:0 0 10px;">
+                {{ post.original_post.excerpt|default:post.original_post.content|striptags|truncatewords:30 }}
+              </p>
+
+              <div class="d-flex gap-3" style="font-size:13.5px;color:var(--knit-muted);">
+                <span><i class="bi bi-heart-fill" style="color:var(--knit-primary);"></i> {{ post.original_post.likes.count }}</span>
+                <span><i class="bi bi-chat-fill" style="color:var(--knit-primary);"></i> {{ post.original_post.comments.count }}</span>
+              </div>
+            </div>
+          {% endif %}
+        </article>
+      {% empty %}
+        <div class="knit-card knit-empty">
+          <i class="bi bi-arrow-repeat"></i>
+          <p>No shares yet.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ============ FRIENDS (owner only) ============ -->
+  {% if show_friends %}
+    <div class="knit-friends-panel">
+      <h3 style="font-size:18px;font-weight:800;margin:0 0 14px;">
+        <i class="bi bi-people" style="color:var(--knit-primary);"></i>
+        Your Friends ({{ my_friends|length }})
+      </h3>
+
+      <div class="knit-card">
+        {% if my_friends %}
+          {% for friend in my_friends %}
+            <div class="knit-friend-row">
+              <span class="knit-avatar-sm">
+                {% if friend.profile.avatar %}<img src="{{ friend.profile.avatar.url }}" alt="" />
+                {% else %}{{ friend.profile.initial }}{% endif %}
+              </span>
+              <div class="flex-grow-1">
+                <strong>{{ friend.profile.display_name }}</strong>
+                <small class="text-muted d-block">@{{ friend.username }}</small>
+              </div>
+              <a href="{% url 'profile-detail' friend.username %}" class="btn-knit-outline">View</a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="knit-empty">
+            <i class="bi bi-people"></i>
+            <p>You haven't added any friends yet.</p>
+            <a href="{% url 'knitting-space' %}?section=discover" class="btn-knit mt-3"><i class="bi bi-compass"></i> Discover people</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  (function () {
+    var tabs = document.querySelectorAll('.knit-tab');
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+
+        document.querySelectorAll('.knit-tab-pane').forEach(function (p) {
+          p.style.display = 'none';
+        });
+        var target = document.getElementById(tab.dataset.pane);
+        if (target) target.style.display = 'block';
+      });
+    });
+  })();
+</script>
+{% endblock %}

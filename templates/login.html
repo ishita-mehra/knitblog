@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Knit | Login{% endblock %}
+
+{% block extra_head %}
+<style>
+  .knit-auth-wrapper{
+    min-height:calc(100vh - 240px);display:flex;align-items:center;justify-content:center;padding:40px 20px;
+  }
+  .knit-auth-split{
+    width:100%;max-width:900px;min-height:520px;background:#fff;border-radius:26px;
+    overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.12);display:flex;
+  }
+  .knit-auth-brand{
+    width:45%;background:linear-gradient(150deg,#057a71,#04a89b);color:#fff;
+    display:flex;flex-direction:column;justify-content:center;padding:56px;
+  }
+  .knit-wordmark{font-size:52px;font-weight:800;margin-bottom:18px;letter-spacing:-1.5px;}
+  .knit-auth-brand p{font-size:17px;line-height:1.65;margin:0;opacity:.94;}
+  .knit-auth-form{width:55%;padding:60px 56px;display:flex;flex-direction:column;justify-content:center;}
+  .knit-display{font-size:30px;font-weight:800;color:var(--knit-primary);letter-spacing:-.6px;}
+  .knit-field-row{display:flex;align-items:center;justify-content:space-between;}
+  .knit-forgot-link{font-size:13.5px;font-weight:600;}
+  @media(max-width:768px){
+    .knit-auth-split{flex-direction:column;min-height:auto;}
+    .knit-auth-brand,.knit-auth-form{width:100%;}
+    .knit-auth-brand{padding:40px;text-align:center;}
+    .knit-auth-form{padding:40px 30px;}
+    .knit-wordmark{font-size:42px;}
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="knit-auth-wrapper">
+  <div class="knit-auth-split">
+    <div class="knit-auth-brand">
+      <span class="knit-wordmark">KnitBlog</span>
+      <p>Short updates, real conversations, and friends you actually keep up with.</p>
+    </div>
+
+    <div class="knit-auth-form">
+      <h2 class="knit-display mb-1">Welcome back</h2>
+      <p class="text-muted mb-4">Log in to see what your friends are writing.</p>
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" class="form-control" id="username" name="username" required autofocus />
+        </div>
+
+        <div class="mb-3">
+          <div class="knit-field-row">
+            <label for="password" class="form-label mb-0">Password</label>
+            <a href="{% url 'password-reset' %}" class="knit-forgot-link">Forgot password?</a>
+          </div>
+          <input type="password" class="form-control mt-1" id="password" name="password" required />
+        </div>
+
+        <button type="submit" class="btn-knit w-100 justify-content-center mt-3">Sign in</button>
+      </form>
+
+      <p class="mt-4 text-center text-muted">
+        Don't have an account? <a href="{% url 'signup' %}">Sign up</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

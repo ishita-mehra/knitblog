@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete "{{ post.title }}" | KnitBlog{% endblock %}
+
+{% block body %}
+<div style="max-width:560px;margin:40px auto;">
+  <div class="knit-card text-center">
+    <div style="width:64px;height:64px;border-radius:50%;background:rgba(224,84,106,.10);color:#e0546a;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 18px;">
+      <i class="bi bi-trash"></i>
+    </div>
+
+    <h2 style="font-size:22px;font-weight:800;margin:0 0 8px;">Delete this post?</h2>
+    <p class="text-muted" style="font-size:15px;line-height:1.6;margin:0 0 24px;">
+      You're about to permanently delete <strong>“{{ post.title }}”</strong>. This cannot be undone.
+    </p>
+
+    <form method="POST" class="d-flex gap-2 justify-content-center">
+      {% csrf_token %}
+      <a href="{{ post.get_absolute_url }}" class="btn-knit-outline">Cancel</a>
+      <button type="submit" class="btn-knit" style="background:#e0546a;"><i class="bi bi-trash"></i> Yes, delete</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /knitting-space/
+Disallow: /profile/edit/
+Disallow: /admin/
+
+Sitemap: {{ request.scheme }}://{{ request.get_host }}/sitemap.xml

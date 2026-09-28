@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ page_title }} | KnitBlog{% endblock %}
+{% block og_title %}{{ page_title }} | KnitBlog{% endblock %}
+
+{% block extra_head %}
+<style>
+  .knit-blog-layout{display:grid;grid-template-columns:1fr 290px;gap:26px;align-items:start;}
+  .knit-post-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px;}
+  .knit-sidebar-card{
+    background:#fff;border:1px solid var(--knit-border);border-radius:var(--knit-radius);
+    padding:20px;box-shadow:var(--knit-shadow);margin-bottom:20px;
+  }
+  .knit-sidebar-card h4{
+    font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--knit-primary);margin:0 0 14px;display:flex;align-items:center;gap:7px;
+  }
+  .knit-sidebar-list{display:flex;flex-direction:column;gap:2px;}
+  .knit-sidebar-list a{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 12px;border-radius:9px;color:var(--knit-text);
+    font-size:14.5px;font-weight:500;transition:background-color .18s ease,color .18s ease;
+  }
+  .knit-sidebar-list a:hover{background:var(--knit-primary-soft);color:var(--knit-primary);}
+  .knit-page-title{font-size:32px;font-weight:800;letter-spacing:-.8px;margin:0 0 6px;color:var(--knit-text);}
+  .knit-page-sub{color:var(--knit-muted);font-size:15px;margin:0 0 24px;}
+  @media(max-width:900px){ .knit-blog-layout{grid-template-columns:1fr;} }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="knit-blog-layout">
+  <div>
+    <h1 class="knit-page-title">{{ page_title }}</h1>
+    <p class="knit-page-sub">{{ page_obj.paginator.count }} post{{ page_obj.paginator.count|pluralize }} found</p>
+
+    {% if page_obj.object_list %}
+      <div class="knit-post-grid">
+        {% for post in page_obj %}
+          {% include '_post_card.html' with post=post %}
+        {% endfor %}
+      </div>
+
+      {% if page_obj.has_other_pages %}
+        <nav class="knit-pagination">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+              <span class="current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+          {% endif %}
+        </nav>
+      {% endif %}
+    {% else %}
+      <div class="knit-card knit-empty">
+        <i class="bi bi-journal-x"></i>
+        <p>No posts here yet.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="knit-sidebar-card">
+      <h4><i class="bi bi-folder2-open"></i> Categories</h4>
+      <div class="knit-sidebar-list">
+        {% for c in categories %}
+          <a href="{{ c.get_absolute_url }}">{{ c.name }}</a>
+        {% empty %}
+          <span class="text-muted small">No categories yet.</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="knit-sidebar-card">
+      <h4><i class="bi bi-hash"></i> Popular tags</h4>
+      <div class="knit-tag-cloud">
+        {% for t in popular_tags %}
+          <a href="{{ t.get_absolute_url }}" class="knit-chip">#{{ t.name }}</a>
+        {% empty %}
+          <span class="text-muted small">No tags yet.</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="knit-sidebar-card">
+      <h4><i class="bi bi-rss"></i> Stay updated</h4>
+      <p class="text-muted" style="font-size:14px;line-height:1.6;margin:0 0 12px;">
+        Subscribe to the RSS feed and never miss a new post.
+      </p>
+      <a href="{% url 'post-feed' %}" class="btn-knit-outline w-100 justify-content-center">Open RSS feed</a>
+    </div>
+
+    {% if user.is_authenticated %}
+      <div class="knit-sidebar-card">
+        <h4><i class="bi bi-pencil-square"></i> Write</h4>
+        <p class="text-muted" style="font-size:14px;line-height:1.6;margin:0 0 12px;">
+          Got something to share? Publish it in minutes.
+        </p>
+        <a href="{% url 'post-create' %}" class="btn-knit w-100 justify-content-center">New post</a>
+      </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}
