@@ -1,201 +1,476 @@
 {% extends 'base.html' %}
 {% load static humanize %}
 
-{% block title %}KnitBlog — Share, Connect, Keep Close{% endblock %}
-{% block meta_description %}KnitBlog is a simple social blogging space. Read fresh stories, share your thoughts, and connect with people who matter.{% endblock %}
-{% block og_title %}KnitBlog — Share, Connect, Keep Close{% endblock %}
+{% block title %}
+  KnitBlog — Share, Connect, Keep Close
+{% endblock %}
+{% block meta_description %}
+  KnitBlog is a simple social blogging space. Read fresh stories, share your thoughts, and connect with people who matter.
+{% endblock %}
+{% block og_title %}
+  KnitBlog — Share, Connect, Keep Close
+{% endblock %}
 
 {% block extra_head %}
-<style>
-  .knit-hero{
-    background:#fff;border-radius:26px;overflow:hidden;
-    box-shadow:var(--knit-shadow);margin-bottom:26px;
-  }
-  .knit-hero-inner{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:56px 60px;gap:40px;
-  }
-  .knit-hero-text{flex:1;min-width:0;}
-  .knit-hero-text h1{
-    font-size:46px;font-weight:800;line-height:1.12;
-    color:var(--knit-text);margin:0 0 20px;letter-spacing:-1px;
-  }
-  .knit-hero-text h1 span{color:var(--knit-primary);}
-  .knit-hero-text p{
-    font-size:17.5px;line-height:1.7;color:var(--knit-muted);
-    max-width:520px;margin:0 0 30px;
-  }
-  .knit-hero-actions{display:flex;gap:12px;flex-wrap:wrap;}
-  .knit-hero-image{flex:0 0 42%;display:flex;align-items:center;justify-content:center;}
-  .knit-hero-image img{max-width:100%;max-height:360px;object-fit:contain;}
-
-  .knit-section-head{
-    display:flex;justify-content:space-between;align-items:flex-end;
-    margin:44px 0 22px;gap:16px;flex-wrap:wrap;
-  }
-  .knit-section-head h2{
-    font-size:26px;font-weight:800;color:var(--knit-text);margin:0;
-    letter-spacing:-.5px;
-  }
-  .knit-section-head p{margin:4px 0 0;color:var(--knit-muted);font-size:15px;}
-
-  .knit-post-grid{
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
-    gap:22px;
-  }
-
-  .knit-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;}
-  .knit-feature{
-    background:#fff;border:1px solid var(--knit-border);border-radius:18px;
-    padding:26px 24px;box-shadow:var(--knit-shadow);
-    transition:transform .22s ease,box-shadow .22s ease;
-  }
-  .knit-feature:hover{transform:translateY(-4px);box-shadow:0 14px 32px rgba(15,40,38,.11);}
-  .knit-feature-icon{
-    width:50px;height:50px;border-radius:14px;background:var(--knit-primary-soft);
-    color:var(--knit-primary);display:flex;align-items:center;justify-content:center;
-    font-size:22px;margin-bottom:16px;
-  }
-  .knit-feature h3{font-size:17px;font-weight:700;margin:0 0 8px;color:var(--knit-text);}
-  .knit-feature p{font-size:14.5px;line-height:1.65;color:var(--knit-muted);margin:0;}
-
-  .knit-tag-cloud{display:flex;flex-wrap:wrap;gap:8px;}
-
-  @media(max-width:900px){
-    .knit-hero-inner{flex-direction:column;padding:40px 28px;text-align:center;}
-    .knit-hero-text h1{font-size:34px;}
-    .knit-hero-text p{margin-left:auto;margin-right:auto;}
-    .knit-hero-actions{justify-content:center;}
-    .knit-hero-image{flex:0 0 auto;width:100%;}
-  }
-</style>
+  <style>
+    /* ============ HERO CARD ============ */
+    .knit-hero {
+      background: #ffffff;
+      border-radius: 30px;
+      overflow: hidden;
+      margin-bottom: 40px;
+      position: relative;
+      border: 1px solid rgba(5, 122, 113, 0.08);
+      box-shadow: 0 2px 4px rgba(5, 122, 113, 0.05), 0 14px 28px rgba(5, 122, 113, 0.14), 0 40px 80px -22px rgba(5, 122, 113, 0.28);
+    }
+    /* Top accent bar */
+    .knit-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #057a71, #04a89b, #057a71);
+      background-size: 200% 100%;
+      animation: knitNavShine 6s linear infinite;
+      z-index: 3;
+    }
+    /* Soft inner glows */
+    .knit-hero::after {
+      content: '';
+      position: absolute;
+      top: -140px;
+      right: -120px;
+      width: 460px;
+      height: 460px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(4, 168, 155, 0.16), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .knit-hero-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 72px 64px;
+      gap: 48px;
+      position: relative;
+      z-index: 1;
+    }
+    .knit-hero-text {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .knit-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--knit-primary-soft);
+      color: var(--knit-primary);
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 22px;
+    }
+    .knit-hero-text h1 {
+      font-size: 54px;
+      font-weight: 800;
+      line-height: 1.06;
+      color: var(--knit-text);
+      margin: 0 0 20px;
+      letter-spacing: -1.8px;
+    }
+    .knit-hero-text h1 span {
+      background: var(--knit-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .knit-hero-text p {
+      font-size: 17.5px;
+      line-height: 1.7;
+      color: #4a5b59;
+      max-width: 520px;
+      margin: 0 0 32px;
+    }
+    .knit-hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .knit-hero-image {
+      flex: 0 0 42%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .knit-hero-image img {
+      max-width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 40px rgba(5, 122, 113, 0.16));
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* ============ LATEST POSTS — always 3 per row on desktop ============ */
+    .knit-post-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+    }
+    @media (max-width: 991px) {
+      .knit-post-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+    }
+    @media (max-width: 640px) {
+      .knit-post-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* ============ FEATURES ============ */
+    .knit-features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr); /* 3 per row on desktop */
+      gap: 22px;
+    }
+    .knit-feature {
+      background: #fff;
+      border: 1px solid var(--knit-border);
+      border-radius: 20px;
+      padding: 30px 26px;
+      box-shadow: 0 4px 14px rgba(5, 122, 113, 0.06);
+      transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column; /* keep icon/title/text aligned */
+      min-height: 200px; /* equal height even with short text */
+    }
+    .knit-feature::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--knit-gradient);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .knit-feature:hover::before {
+      transform: scaleX(1);
+    }
+    .knit-feature:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 32px rgba(5, 122, 113, 0.16);
+      border-color: var(--knit-border-strong);
+    }
+    .knit-feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 15px;
+      background: var(--knit-primary-soft);
+      color: var(--knit-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 18px;
+      flex-shrink: 0;
+    }
+    .knit-feature h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: var(--knit-text);
+    }
+    .knit-feature p {
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: var(--knit-muted);
+      margin: 0;
+    }
+    
+    /* Tablet — 2 per row */
+    @media (max-width: 991px) {
+      .knit-features {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+      }
+      .knit-feature {
+        min-height: auto;
+        padding: 26px 22px;
+      }
+    }
+    
+    /* Mobile — 1 per row */
+    @media (max-width: 600px) {
+      .knit-features {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* ============ BROWSE / TAXONOMY ============ */
+    .knit-topic-block {
+      background: #fff;
+      border: 1px solid var(--knit-border);
+      border-radius: 22px;
+      padding: 28px 30px;
+      box-shadow: 0 6px 20px rgba(5, 122, 113, 0.07);
+      position: relative;
+      overflow: hidden;
+    }
+    .knit-topic-block::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--knit-gradient);
+      opacity: 0.85;
+    }
+    .knit-topic-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--knit-text);
+      margin: 0 0 18px;
+      letter-spacing: -0.2px;
+    }
+    .knit-topic-title i {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--knit-gradient);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      box-shadow: 0 4px 12px rgba(5, 122, 113, 0.24);
+    }
+    .knit-tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+    
+    .knit-topic-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--knit-tint);
+      color: var(--knit-primary);
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: all 0.18s ease;
+    }
+    .knit-topic-chip .count {
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--knit-primary-dark);
+      border-radius: 999px;
+      padding: 1px 9px;
+      font-size: 11.5px;
+      font-weight: 800;
+      transition: all 0.18s ease;
+    }
+    .knit-topic-chip:hover {
+      background: var(--knit-gradient);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(5, 122, 113, 0.28);
+    }
+    .knit-topic-chip:hover .count {
+      background: rgba(255, 255, 255, 0.28);
+      color: #fff;
+    }
+    
+    @media (max-width: 900px) {
+      .knit-hero-inner {
+        flex-direction: column;
+        padding: 40px 26px;
+        text-align: center;
+      }
+      .knit-hero-text h1 {
+        font-size: 36px;
+        letter-spacing: -0.9px;
+      }
+      .knit-hero-text p {
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 16px;
+      }
+      .knit-hero-actions {
+        justify-content: center;
+      }
+      .knit-hero-image {
+        flex: 0 0 auto;
+        width: 100%;
+      }
+      .knit-hero-image img {
+        max-height: 260px;
+      }
+    }
+  </style>
 {% endblock %}
 
 {% block body %}
-<!-- ============ HERO ============ -->
-<section class="knit-hero">
-  <div class="knit-hero-inner">
-    <div class="knit-hero-text">
-      <h1>Stay connected,<br /><span>stay close.</span></h1>
-      <p>Share your thoughts, publish your writing, and have meaningful conversations in a simple space designed for real connections.</p>
+  <!-- ============ HERO ============ -->
+  <section class="knit-hero">
+    <div class="knit-hero-inner">
+      <div class="knit-hero-text">
+        <h1>Stay connected,<br /><span>stay close.</span></h1>
+        <p>Share your thoughts, publish your writing, and have meaningful conversations in a simple space designed for real connections.</p>
 
-      <div class="knit-hero-actions">
-        {% if user.is_authenticated %}
-          <a href="{% url 'post-create' %}" class="btn-knit"><i class="bi bi-pencil-square"></i> Write a post</a>
-          <a href="{% url 'post-list' %}" class="btn-knit-outline"><i class="bi bi-journals"></i> Explore blog</a>
-        {% else %}
-          <a href="{% url 'get-started' %}" class="btn-knit"><i class="bi bi-yarn"></i> Start Knitting</a>
-          <a href="{% url 'post-list' %}" class="btn-knit-outline">Read the blog</a>
+        <div class="knit-hero-actions">
+          {% if user.is_authenticated %}
+            <a href="{% url 'post-create' %}" class="btn-knit"><i class="bi bi-pencil-square"></i> Write a post</a>
+            <a href="{% url 'post-list' %}" class="btn-knit-outline"><i class="bi bi-journals"></i> Explore blog</a>
+          {% else %}
+            <a href="{% url 'get-started' %}" class="btn-knit"><i class="bi bi-yarn"></i> Start Knitting</a>
+            <a href="{% url 'post-list' %}" class="btn-knit-outline">Read the blog</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="knit-hero-image">
+        <img src="{% static 'img_1.png' %}" alt="KnitBlog illustration" />
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ LATEST POSTS ============ -->
+  <section>
+    <div class="knit-section-head">
+      <div>
+        <h2>Latest from the blog</h2>
+        <p>Fresh writing from the community.</p>
+      </div>
+      <a href="{% url 'post-list' %}" class="btn-knit-outline">View all <i class="bi bi-arrow-right"></i></a>
+    </div>
+
+    {% if latest_posts %}
+      <div class="knit-post-grid">
+        {% for post in latest_posts %}
+          {% include '_post_card.html' with post=post %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="knit-card knit-empty">
+        <i class="bi bi-journal-text"></i>
+        <p>No posts published yet. Be the first to write something!</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section>
+    <div class="knit-section-head">
+      <div>
+        <h2>Everything you need</h2>
+        <p>Simple tools that make writing and connecting feel easy.</p>
+      </div>
+    </div>
+
+    <div class="knit-features">
+      <div class="knit-feature">
+        <div class="knit-feature-icon">
+          <i class="bi bi-pencil-square"></i>
+        </div>
+        <h3>Write beautifully</h3>
+        <p>Add photos, headings, and lists to make your posts look great.</p>
+      </div>
+      <div class="knit-feature">
+        <div class="knit-feature-icon">
+          <i class="bi bi-tags"></i>
+        </div>
+        <h3>Stay organized</h3>
+        <p>Sort your posts by topic so readers can find what they love.</p>
+      </div>
+      <div class="knit-feature">
+        <div class="knit-feature-icon">
+          <i class="bi bi-chat-square-text"></i>
+        </div>
+        <h3>Real conversations</h3>
+        <p>Reply to each other and keep the discussion going.</p>
+      </div>
+      <div class="knit-feature">
+        <div class="knit-feature-icon">
+          <i class="bi bi-people"></i>
+        </div>
+        <h3>Connect with people</h3>
+        <p>Send friend requests and see what your friends are writing.</p>
+      </div>
+      <div class="knit-feature">
+        <div class="knit-feature-icon">
+          <i class="bi bi-search"></i>
+        </div>
+        <h3>Easy search</h3>
+        <p>Find any post in seconds — just type a few words.</p>
+      </div>
+      <div class="knit-feature">
+        <div class="knit-feature-icon">
+          <i class="bi bi-send-check"></i>
+        </div>
+        <h3>Follow &amp; get updates</h3>
+        <p>Readers can follow your blog and get new posts automatically.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAXONOMY ============ -->
+  {% if categories or popular_tags %}
+    <section>
+      <div class="knit-section-head">
+        <div>
+          <h2>Browse by topic</h2>
+          <p>Jump straight into what you love reading.</p>
+        </div>
+      </div>
+
+      <div class="d-flex flex-column gap-3">
+        {% if categories %}
+          <div class="knit-topic-block">
+            <h4 class="knit-topic-title"><i class="bi bi-folder2-open"></i> Categories</h4>
+            <div class="knit-tag-cloud">
+              {% for c in categories %}
+                <a href="{{ c.get_absolute_url }}" class="knit-topic-chip">{{ c.name }} <span class="count">{{ c.n }}</span></a>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if popular_tags %}
+          <div class="knit-topic-block">
+            <h4 class="knit-topic-title"><i class="bi bi-hash"></i> Popular tags</h4>
+            <div class="knit-tag-cloud">
+              {% for t in popular_tags %}
+                <a href="{{ t.get_absolute_url }}" class="knit-topic-chip">#{{ t.name }} <span class="count">{{ t.n }}</span></a>
+              {% endfor %}
+            </div>
+          </div>
         {% endif %}
       </div>
-    </div>
-
-    <div class="knit-hero-image">
-      <img src="{% static 'img_1.png' %}" alt="KnitBlog illustration" />
-    </div>
-  </div>
-</section>
-
-<!-- ============ FEATURES ============ -->
-<section>
-  <div class="knit-section-head">
-    <div>
-      <h2>Everything you need</h2>
-      <p>Write, publish, connect and grow — all in one place.</p>
-    </div>
-  </div>
-
-  <div class="knit-features">
-    <div class="knit-feature">
-      <div class="knit-feature-icon"><i class="bi bi-pencil-square"></i></div>
-      <h3>Rich writing</h3>
-      <p>Format beautifully with headings, lists, quotes, images and links — straight from your browser.</p>
-    </div>
-    <div class="knit-feature">
-      <div class="knit-feature-icon"><i class="bi bi-tags"></i></div>
-      <h3>Categories &amp; tags</h3>
-      <p>Organize posts into categories and tags so readers can find exactly what interests them.</p>
-    </div>
-    <div class="knit-feature">
-      <div class="knit-feature-icon"><i class="bi bi-chat-square-text"></i></div>
-      <h3>Threaded comments</h3>
-      <p>Readers can reply to each other, turning your posts into real conversations.</p>
-    </div>
-    <div class="knit-feature">
-      <div class="knit-feature-icon"><i class="bi bi-people"></i></div>
-      <h3>Friends &amp; likes</h3>
-      <p>Send friend requests, like posts and share them with your own followers.</p>
-    </div>
-    <div class="knit-feature">
-      <div class="knit-feature-icon"><i class="bi bi-search"></i></div>
-      <h3>Powerful search</h3>
-      <p>Search across titles, content, tags, categories and authors in an instant.</p>
-    </div>
-    <div class="knit-feature">
-      <div class="knit-feature-icon"><i class="bi bi-rss"></i></div>
-      <h3>RSS &amp; SEO</h3>
-      <p>Auto-generated sitemap, Open Graph previews and an RSS feed — built in.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ============ LATEST POSTS ============ -->
-<section>
-  <div class="knit-section-head">
-    <div>
-      <h2>Latest from the blog</h2>
-      <p>Fresh writing from the community.</p>
-    </div>
-    <a href="{% url 'post-list' %}" class="btn-knit-outline">View all <i class="bi bi-arrow-right"></i></a>
-  </div>
-
-  {% if latest_posts %}
-    <div class="knit-post-grid">
-      {% for post in latest_posts %}
-        {% include '_post_card.html' with post=post %}
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="knit-card knit-empty">
-      <i class="bi bi-journal-text"></i>
-      <p>No posts published yet. Be the first to write something!</p>
-    </div>
+    </section>
   {% endif %}
-</section>
-
-<!-- ============ TAXONOMY ============ -->
-{% if categories or popular_tags %}
-<section>
-  <div class="knit-section-head">
-    <div>
-      <h2>Browse by topic</h2>
-      <p>Jump straight into what you love reading.</p>
-    </div>
-  </div>
-
-  <div class="knit-card">
-    {% if categories %}
-      <div class="mb-4">
-        <h4 class="knit-card-title"><i class="bi bi-folder2-open"></i> Categories</h4>
-        <div class="knit-tag-cloud">
-          {% for c in categories %}
-            <a href="{{ c.get_absolute_url }}" class="knit-chip">{{ c.name }} <span class="opacity-75">{{ c.n }}</span></a>
-          {% endfor %}
-        </div>
-      </div>
-    {% endif %}
-
-    {% if popular_tags %}
-      <div>
-        <h4 class="knit-card-title"><i class="bi bi-hash"></i> Popular tags</h4>
-        <div class="knit-tag-cloud">
-          {% for t in popular_tags %}
-            <a href="{{ t.get_absolute_url }}" class="knit-chip">#{{ t.name }} <span class="opacity-75">{{ t.n }}</span></a>
-          {% endfor %}
-        </div>
-      </div>
-    {% endif %}
-  </div>
-</section>
-{% endif %}
 {% endblock %}

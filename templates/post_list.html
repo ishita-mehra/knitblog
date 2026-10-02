@@ -6,31 +6,292 @@
 
 {% block extra_head %}
 <style>
-  .knit-blog-layout{display:grid;grid-template-columns:1fr 290px;gap:26px;align-items:start;}
-  .knit-post-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px;}
+  .knit-blog-layout{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 300px;
+    gap:30px;
+    align-items:start;
+  }
+
+  /* ========================================================
+     POST GRID
+     ======================================================== */
+  .knit-post-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+    gap:20px;
+  }
+
+  .knit-page-title{
+    font-size:34px;
+    font-weight:800;
+    letter-spacing:-1px;
+    margin:0 0 6px;
+    color:var(--knit-text);
+  }
+  .knit-page-sub{
+    color:var(--knit-muted);
+    font-size:15px;
+    margin:0 0 26px;
+  }
+
+  /* ========================================================
+     SIDEBAR
+     ======================================================== */
+  .knit-sidebar-stack{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    position:sticky;
+    top:calc(var(--knit-nav-h) + 20px);
+  }
+
   .knit-sidebar-card{
-    background:#fff;border:1px solid var(--knit-border);border-radius:var(--knit-radius);
-    padding:20px;box-shadow:var(--knit-shadow);margin-bottom:20px;
+    background:#fff;
+    border:1px solid var(--knit-border);
+    border-radius:20px;
+    padding:22px;
+    box-shadow:
+      0 1px 2px rgba(5,122,113,.04),
+      0 6px 20px rgba(5,122,113,.05);
+    overflow:hidden;
+    position:relative;
+    transition:box-shadow .2s ease,border-color .2s ease;
   }
-  .knit-sidebar-card h4{
-    font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-    color:var(--knit-primary);margin:0 0 14px;display:flex;align-items:center;gap:7px;
+  .knit-sidebar-card:hover{
+    box-shadow:
+      0 2px 4px rgba(5,122,113,.06),
+      0 10px 26px rgba(5,122,113,.09);
+    border-color:var(--knit-border-strong);
   }
-  .knit-sidebar-list{display:flex;flex-direction:column;gap:2px;}
-  .knit-sidebar-list a{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:9px 12px;border-radius:9px;color:var(--knit-text);
-    font-size:14.5px;font-weight:500;transition:background-color .18s ease,color .18s ease;
+
+  /* Top accent strip */
+  .knit-sidebar-card::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;
+    height:3px;
+    background:var(--knit-gradient);
+    opacity:.85;
   }
-  .knit-sidebar-list a:hover{background:var(--knit-primary-soft);color:var(--knit-primary);}
-  .knit-page-title{font-size:32px;font-weight:800;letter-spacing:-.8px;margin:0 0 6px;color:var(--knit-text);}
-  .knit-page-sub{color:var(--knit-muted);font-size:15px;margin:0 0 24px;}
-  @media(max-width:900px){ .knit-blog-layout{grid-template-columns:1fr;} }
+
+  .knit-sidebar-head{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    margin:0 0 18px;
+  }
+  .knit-sidebar-head-icon{
+    width:34px;height:34px;
+    border-radius:10px;
+    background:var(--knit-primary-soft);
+    color:var(--knit-primary);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:15px;
+    flex-shrink:0;
+  }
+  .knit-sidebar-head-title{
+    font-size:13px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--knit-text);
+    margin:0;
+    line-height:1.2;
+  }
+
+  /* ========================================================
+     CATEGORIES LIST
+     ======================================================== */
+  .knit-cat-list{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .knit-cat-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:11px 14px;
+    border-radius:12px;
+    color:var(--knit-text);
+    font-size:14.5px;
+    font-weight:600;
+    text-decoration:none;
+    background:var(--knit-primary-softer);
+    transition:all .18s ease;
+    position:relative;
+  }
+  .knit-cat-item .label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+  }
+  .knit-cat-item .label i{
+    color:var(--knit-primary);
+    font-size:15px;
+    flex-shrink:0;
+    transition:transform .18s ease;
+  }
+  .knit-cat-item .label span{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .knit-cat-item .arrow{
+    color:var(--knit-primary);
+    font-size:12px;
+    opacity:.45;
+    transition:opacity .18s ease, transform .18s ease;
+    flex-shrink:0;
+  }
+  .knit-cat-item:hover{
+    background:var(--knit-primary-soft);
+    color:var(--knit-primary);
+    transform:translateX(2px);
+  }
+  .knit-cat-item:hover .label i{transform:scale(1.1);}
+  .knit-cat-item:hover .arrow{opacity:1;transform:translateX(2px);}
+
+  /* ========================================================
+     POPULAR TAGS — pill cloud with elegant styling
+     ======================================================== */
+  .knit-tag-cloud{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .knit-tag-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 15px;
+    border-radius:999px;
+    background:var(--knit-tint);
+    color:var(--knit-primary);
+    font-size:13px;
+    font-weight:600;
+    text-decoration:none;
+    border:1px solid transparent;
+    transition:all .2s ease;
+    line-height:1;
+    white-space:nowrap;
+  }
+  .knit-tag-pill .hash{
+    font-weight:800;
+    opacity:.7;
+    font-size:12px;
+  }
+  .knit-tag-pill .count{
+    background:#fff;
+    color:var(--knit-primary-dark);
+    border-radius:999px;
+    padding:1px 8px;
+    font-size:11px;
+    font-weight:800;
+    min-width:22px;
+    text-align:center;
+    line-height:1.5;
+    transition:all .18s ease;
+  }
+  .knit-tag-pill:hover{
+    background:var(--knit-gradient);
+    color:#fff;
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(5,122,113,.24);
+    border-color:transparent;
+  }
+  .knit-tag-pill:hover .hash{opacity:.9;}
+  .knit-tag-pill:hover .count{
+    background:rgba(255,255,255,.28);
+    color:#fff;
+  }
+
+  /* ========================================================
+     WRITE CARD — CTA
+     ======================================================== */
+  .knit-write-card{
+    background:
+      linear-gradient(135deg, rgba(5,122,113,.06), rgba(4,168,155,.02));
+    border:1px dashed var(--knit-border-strong);
+    border-radius:20px;
+    padding:24px 22px;
+    text-align:center;
+    transition:all .2s ease;
+  }
+  .knit-write-card:hover{
+    border-color:var(--knit-primary);
+    background:
+      linear-gradient(135deg, rgba(5,122,113,.10), rgba(4,168,155,.04));
+  }
+  .knit-write-card .icon{
+    width:52px;height:52px;
+    margin:0 auto 12px;
+    border-radius:16px;
+    background:var(--knit-gradient);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+    box-shadow:0 8px 20px rgba(5,122,113,.24);
+  }
+  .knit-write-card h4{
+    font-size:15.5px;
+    font-weight:800;
+    margin:0 0 6px;
+    color:var(--knit-text);
+    letter-spacing:-.2px;
+  }
+  .knit-write-card p{
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--knit-muted);
+    margin:0 0 16px;
+  }
+  .knit-write-card .btn-knit{
+    width:100%;
+    justify-content:center;
+  }
+
+  /* ========================================================
+     EMPTY SIDEBAR MESSAGE
+     ======================================================== */
+  .knit-sidebar-empty{
+    text-align:center;
+    padding:8px 4px 4px;
+  }
+  .knit-sidebar-empty .icon{
+    width:44px;height:44px;
+    margin:0 auto 10px;
+    border-radius:12px;
+    background:var(--knit-primary-softer);
+    color:var(--knit-primary);
+    display:flex;align-items:center;justify-content:center;
+    font-size:19px;
+    opacity:.8;
+  }
+  .knit-sidebar-empty p{
+    margin:0;
+    font-size:13.5px;
+    color:var(--knit-muted);
+    line-height:1.55;
+  }
+
+  /* ========================================================
+     RESPONSIVE
+     ======================================================== */
+  @media(max-width:900px){
+    .knit-blog-layout{grid-template-columns:1fr;}
+    .knit-sidebar-stack{position:static;}
+  }
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="knit-blog-layout">
+
+  <!-- =================== MAIN =================== -->
   <div>
     <h1 class="knit-page-title">{{ page_title }}</h1>
     <p class="knit-page-sub">{{ page_obj.paginator.count }} post{{ page_obj.paginator.count|pluralize }} found</p>
@@ -45,7 +306,9 @@
       {% if page_obj.has_other_pages %}
         <nav class="knit-pagination">
           {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+              <i class="bi bi-chevron-left"></i>
+            </a>
           {% endif %}
 
           {% for num in page_obj.paginator.page_range %}
@@ -57,7 +320,9 @@
           {% endfor %}
 
           {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+              <i class="bi bi-chevron-right"></i>
+            </a>
           {% endif %}
         </nav>
       {% endif %}
@@ -69,47 +334,83 @@
     {% endif %}
   </div>
 
-  <!-- SIDEBAR -->
+  <!-- =================== SIDEBAR =================== -->
   <aside>
-    <div class="knit-sidebar-card">
-      <h4><i class="bi bi-folder2-open"></i> Categories</h4>
-      <div class="knit-sidebar-list">
-        {% for c in categories %}
-          <a href="{{ c.get_absolute_url }}">{{ c.name }}</a>
-        {% empty %}
-          <span class="text-muted small">No categories yet.</span>
-        {% endfor %}
-      </div>
-    </div>
+    <div class="knit-sidebar-stack">
 
-    <div class="knit-sidebar-card">
-      <h4><i class="bi bi-hash"></i> Popular tags</h4>
-      <div class="knit-tag-cloud">
-        {% for t in popular_tags %}
-          <a href="{{ t.get_absolute_url }}" class="knit-chip">#{{ t.name }}</a>
-        {% empty %}
-          <span class="text-muted small">No tags yet.</span>
-        {% endfor %}
-      </div>
-    </div>
-
-    <div class="knit-sidebar-card">
-      <h4><i class="bi bi-rss"></i> Stay updated</h4>
-      <p class="text-muted" style="font-size:14px;line-height:1.6;margin:0 0 12px;">
-        Subscribe to the RSS feed and never miss a new post.
-      </p>
-      <a href="{% url 'post-feed' %}" class="btn-knit-outline w-100 justify-content-center">Open RSS feed</a>
-    </div>
-
-    {% if user.is_authenticated %}
+      <!-- ========= CATEGORIES ========= -->
       <div class="knit-sidebar-card">
-        <h4><i class="bi bi-pencil-square"></i> Write</h4>
-        <p class="text-muted" style="font-size:14px;line-height:1.6;margin:0 0 12px;">
-          Got something to share? Publish it in minutes.
-        </p>
-        <a href="{% url 'post-create' %}" class="btn-knit w-100 justify-content-center">New post</a>
+        <div class="knit-sidebar-head">
+          <span class="knit-sidebar-head-icon"><i class="bi bi-folder2-open"></i></span>
+          <h4 class="knit-sidebar-head-title">Categories</h4>
+        </div>
+
+        {% if categories %}
+          <div class="knit-cat-list">
+            {% for c in categories %}
+              <a href="{{ c.get_absolute_url }}" class="knit-cat-item">
+                <span class="label">
+                  <i class="bi bi-bookmark-fill"></i>
+                  <span>{{ c.name }}</span>
+                </span>
+                <i class="bi bi-chevron-right arrow"></i>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="knit-sidebar-empty">
+            <div class="icon"><i class="bi bi-folder"></i></div>
+            <p>No categories yet. They'll appear as writers organize their posts.</p>
+          </div>
+        {% endif %}
       </div>
-    {% endif %}
+
+      <!-- ========= POPULAR TAGS ========= -->
+      <div class="knit-sidebar-card">
+        <div class="knit-sidebar-head">
+          <span class="knit-sidebar-head-icon"><i class="bi bi-hash"></i></span>
+          <h4 class="knit-sidebar-head-title">Popular tags</h4>
+        </div>
+
+        {% if popular_tags %}
+          <div class="knit-tag-cloud">
+            {% for t in popular_tags %}
+              <a href="{{ t.get_absolute_url }}" class="knit-tag-pill">
+                <span class="hash">#</span>{{ t.name }}
+                {% if t.post_count %}<span class="count">{{ t.post_count }}</span>{% endif %}
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="knit-sidebar-empty">
+            <div class="icon"><i class="bi bi-hash"></i></div>
+            <p>No tags yet. Tag your posts to help readers find them.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- ========= WRITE CARD ========= -->
+      {% if user.is_authenticated %}
+        <div class="knit-write-card">
+          <div class="icon"><i class="bi bi-pencil-square"></i></div>
+          <h4>Got something to share?</h4>
+          <p>Publish a new post in minutes and reach readers instantly.</p>
+          <a href="{% url 'post-create' %}" class="btn-knit">
+            <i class="bi bi-plus-lg"></i> New post
+          </a>
+        </div>
+      {% else %}
+        <div class="knit-write-card">
+          <div class="icon"><i class="bi bi-yarn"></i></div>
+          <h4>Join the community</h4>
+          <p>Sign up to write, react, and connect with writers on KnitBlog.</p>
+          <a href="{% url 'signup' %}" class="btn-knit">
+            <i class="bi bi-person-plus"></i> Sign up
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
   </aside>
 </div>
 {% endblock %}

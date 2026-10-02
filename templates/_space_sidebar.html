@@ -1,0 +1,183 @@
+{% load static %}
+<style>
+  .space-layout{
+    display:grid;
+    grid-template-columns:232px minmax(0,1fr);   /* ← was 270px */
+    gap:22px;                                     /* ← was 26px */
+    align-items:flex-start;
+    padding-bottom:40px;
+    margin-left:-8px;                             /* ← nudges the grid slightly left */
+  }
+  .space-sidebar{
+    position:sticky;
+    top:calc(var(--knit-nav-h) + 16px);
+    background:#fff;
+    border:1px solid var(--knit-border);
+    border-radius:18px;
+    padding:12px;                                  /* ← was 16px */
+    box-shadow:0 6px 20px rgba(5,122,113,.07);
+    overflow:hidden;
+  }
+
+  /* ---- User card ---- */
+  .space-sidebar-user{
+    display:flex;align-items:center;gap:10px;
+    padding:12px;
+    background:linear-gradient(135deg,rgba(5,122,113,.08),rgba(4,168,155,.04));
+    border-radius:14px;
+    margin-bottom:12px;
+    border:1px solid var(--knit-border);
+  }
+  .space-sidebar-user-info{min-width:0;flex:1;}
+  .space-sidebar-user-info strong{
+    display:block;font-size:13.5px;font-weight:700;
+    color:var(--knit-text);line-height:1.2;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .space-sidebar-user-info small{
+    color:var(--knit-muted);font-size:11.5px;
+  }
+
+  /* ---- Grouped nav ---- */
+  .space-sidebar-nav{display:flex;flex-direction:column;gap:14px;}
+  .space-sidebar-group{display:flex;flex-direction:column;gap:2px;}
+  .space-sidebar-group-title{
+    font-size:10px;font-weight:800;letter-spacing:.10em;
+    text-transform:uppercase;color:var(--knit-muted);
+    padding:0 12px;margin-bottom:4px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .space-sidebar-group-title::after{
+    content:"";flex:1;height:1px;
+    background:linear-gradient(90deg,var(--knit-border),transparent);
+  }
+
+  .space-sidebar a.space-link{
+    position:relative;
+    display:flex;align-items:center;gap:10px;
+    padding:9px 12px;border-radius:10px;
+    color:var(--knit-text);font-weight:500;font-size:13.5px;
+    text-decoration:none;
+    transition:background-color .15s ease,color .15s ease;
+  }
+  .space-sidebar a.space-link i{
+    font-size:16px;width:18px;text-align:center;
+    color:var(--knit-muted);transition:color .15s ease;
+  }
+  .space-sidebar a.space-link:hover{
+    background:var(--knit-primary-softer);
+    color:var(--knit-primary);
+  }
+  .space-sidebar a.space-link:hover i{color:var(--knit-primary);}
+  .space-sidebar a.space-link.active{
+    background:var(--knit-primary-soft);
+    color:var(--knit-primary);
+    font-weight:700;
+  }
+  .space-sidebar a.space-link.active i{color:var(--knit-primary);}
+  .space-sidebar a.space-link.active::before{
+    content:"";position:absolute;
+    left:-12px;top:8px;bottom:8px;width:3px;
+    border-radius:0 3px 3px 0;
+    background:var(--knit-gradient);
+  }
+
+  .space-sidebar a.space-sidebar-logout{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 12px;border-radius:10px;
+    color:#d9534f;font-weight:500;font-size:13.5px;
+    text-decoration:none;
+    margin-top:4px;
+    border-top:1px solid var(--knit-border);
+    padding-top:14px;
+    transition:background-color .15s ease;
+  }
+  .space-sidebar a.space-sidebar-logout i{color:#d9534f;font-size:16px;width:18px;text-align:center;}
+  .space-sidebar a.space-sidebar-logout:hover{
+    background:rgba(217,83,79,.08);
+    color:#c9302c;
+  }
+
+  /* ---- Mobile ---- */
+  @media (max-width:900px){
+    .space-layout{grid-template-columns:1fr;gap:14px;margin-left:0;}
+    .space-sidebar{
+      position:static;
+      padding:8px;overflow-x:auto;
+      display:flex;gap:6px;
+      scrollbar-width:none;
+    }
+    .space-sidebar::-webkit-scrollbar{display:none;}
+    .space-sidebar-user{display:none;}
+    .space-sidebar-group-title{display:none;}
+    .space-sidebar-nav{flex-direction:row;gap:6px;overflow-x:auto;}
+    .space-sidebar-group{flex-direction:row;gap:6px;}
+    .space-sidebar a.space-link,
+    .space-sidebar a.space-sidebar-logout{
+      white-space:nowrap;padding:8px 12px;
+      border-top:none;margin-top:0;padding-top:8px;
+      font-size:13px;
+    }
+    .space-sidebar a.space-link.active::before{display:none;}
+  }
+</style>
+
+<aside class="space-sidebar">
+  <div class="space-sidebar-user">
+    <span class="knit-avatar-sm">
+      {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="" />
+      {% else %}{{ user.profile.initial }}{% endif %}
+    </span>
+    <div class="space-sidebar-user-info">
+      <strong>{{ user.profile.display_name }}</strong>
+      <small>@{{ user.username }}</small>
+    </div>
+  </div>
+
+  <nav class="space-sidebar-nav">
+
+    <div class="space-sidebar-group">
+      <span class="space-sidebar-group-title">Explore</span>
+      <a href="{% url 'knitting-space' %}?section=home" class="space-link {% if space_section == 'home' %}active{% endif %}">
+        <i class="bi bi-house-door"></i> Home
+      </a>
+      <a href="{% url 'knitting-space' %}?section=discover" class="space-link {% if space_section == 'discover' %}active{% endif %}">
+        <i class="bi bi-compass"></i> Discover
+      </a>
+      <a href="{% url 'knitting-space' %}?section=create-post" class="space-link {% if space_section == 'create-post' %}active{% endif %}">
+        <i class="bi bi-pencil-square"></i> Write a Post
+      </a>
+    </div>
+
+    <div class="space-sidebar-group">
+      <span class="space-sidebar-group-title">Your Content</span>
+      <a href="{% url 'knitting-space' %}?section=my-posts" class="space-link {% if space_section == 'my-posts' %}active{% endif %}">
+        <i class="bi bi-journal-text"></i> My Posts
+      </a>
+      <a href="{% url 'knitting-space' %}?section=likes" class="space-link {% if space_section == 'likes' %}active{% endif %}">
+        <i class="bi bi-heart"></i> Likes
+      </a>
+      <a href="{% url 'knitting-space' %}?section=saved" class="space-link {% if space_section == 'saved' %}active{% endif %}">
+        <i class="bi bi-bookmark"></i> Saved
+      </a>
+    </div>
+
+    <div class="space-sidebar-group">
+      <span class="space-sidebar-group-title">Connect</span>
+      <a href="{% url 'knitting-space' %}?section=friends" class="space-link {% if space_section == 'friends' %}active{% endif %}">
+        <i class="bi bi-people"></i> Friends
+      </a>
+      <a href="{% url 'knitting-space' %}?section=friend-requests" class="space-link {% if space_section == 'friend-requests' %}active{% endif %}">
+        <i class="bi bi-person-plus"></i> Requests
+      </a>
+      <a href="{% url 'profile-detail' user.username %}" class="space-link {% if space_section == 'profile' %}active{% endif %}">
+        <i class="bi bi-person-circle"></i> Profile
+      </a>
+    </div>
+
+    <a href="{% url 'logout' %}" class="space-sidebar-logout">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+
+  </nav>
+</aside>

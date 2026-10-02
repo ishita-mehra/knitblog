@@ -1,0 +1,25 @@
+{% if maker_note %}
+<div class="maker-note-wrap" id="knit-maker-note" data-note-id="{{ maker_note.id }}">
+
+  <button type="button" class="maker-note-btn" aria-label="Read a note from the maker" aria-expanded="false">
+    <i class="bi bi-envelope-heart"></i>
+  </button>
+
+  <div class="maker-note-card" role="dialog" aria-label="A note from the maker">
+    <button type="button" class="maker-note-close" aria-label="Close">
+      <i class="bi bi-x-lg"></i>
+    </button>
+
+    <div class="maker-note-label">A note from the maker</div>
+
+    <p class="maker-note-text">
+      {{ maker_note.text }}{% if maker_note.link %}
+        <a href="{{ maker_note.link.url }}" target="_blank" rel="noopener noreferrer">{{ maker_note.link.label }}</a>.{% endif %}{% if maker_note.suffix %}
+        {{ maker_note.suffix }}{% endif %}
+    </p>
+
+    <div class="maker-note-sign">— Ishita</div>
+  </div>
+
+</div>
+{% endif %}

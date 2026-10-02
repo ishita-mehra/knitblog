@@ -21,62 +21,80 @@
 
 {% block extra_head %}
 <style>
-  .knit-article-layout{display:grid;grid-template-columns:1fr 270px;gap:28px;align-items:start;}
-  .knit-article{background:#fff;border:1px solid var(--knit-border);border-radius:22px;overflow:hidden;box-shadow:var(--knit-shadow);}
-  .knit-article-cover{width:100%;max-height:420px;object-fit:cover;display:block;}
-  .knit-article-inner{padding:40px 46px 34px;}
-  .knit-article h1{font-size:38px;font-weight:800;line-height:1.2;letter-spacing:-1px;margin:0 0 18px;color:var(--knit-text);}
+  .knit-article-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:34px;align-items:start;}
+  .knit-article{background:#fff;border:1px solid var(--knit-border);border-radius:24px;overflow:hidden;box-shadow:var(--knit-shadow-md);}
+  .knit-article-cover{width:100%;max-height:440px;object-fit:cover;display:block;}
+  .knit-article-inner{padding:46px 52px 36px;}
+  .knit-article h1{font-size:40px;font-weight:800;line-height:1.18;letter-spacing:-1.2px;margin:0 0 22px;color:var(--knit-text);}
   .knit-article-meta{
-    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-    padding-bottom:22px;margin-bottom:28px;border-bottom:1px solid var(--knit-border);
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding-bottom:24px;margin-bottom:32px;border-bottom:1px solid var(--knit-border);
     font-size:14px;color:var(--knit-muted);
   }
-  .knit-article-meta a{color:var(--knit-text);font-weight:600;}
+  .knit-article-meta a{color:var(--knit-text);font-weight:700;}
   .knit-article-meta a:hover{color:var(--knit-primary);}
 
   .knit-action-bar{
     display:flex;gap:10px;flex-wrap:wrap;align-items:center;
-    padding:20px 46px 28px;border-top:1px solid var(--knit-border);
+    padding:22px 52px 30px;border-top:1px solid var(--knit-border);
+    background:linear-gradient(180deg,transparent,rgba(5,122,113,.02));
   }
   .knit-like-btn{
-    background:transparent;border:1.5px solid var(--knit-border);color:var(--knit-muted);
-    border-radius:10px;padding:9px 18px;font-weight:600;font-size:14.5px;
-    display:inline-flex;align-items:center;gap:7px;transition:all .18s ease;
+    background:#fff;border:1.5px solid var(--knit-border);color:var(--knit-muted);
+    border-radius:999px;padding:9px 18px;font-weight:600;font-size:14px;
+    display:inline-flex;align-items:center;gap:7px;
+    transition:all .16s ease;
   }
-  .knit-like-btn:hover{border-color:var(--knit-primary);color:var(--knit-primary);background:var(--knit-primary-softer);}
-  .knit-like-btn.liked{background:rgba(224,84,106,.10);border-color:#e0546a;color:#e0546a;}
+  .knit-like-btn i{font-size:15px;}
+  .knit-like-btn:hover{border-color:var(--knit-border-strong);color:var(--knit-primary);background:var(--knit-primary-softer);transform:translateY(-1px);}
+  .knit-like-btn.liked{background:rgba(224,84,106,.10);border-color:rgba(224,84,106,.5);color:#e0546a;}
   .knit-like-btn.shared{background:var(--knit-primary-soft);border-color:var(--knit-primary);color:var(--knit-primary);}
   .knit-like-btn.saved{background:#fff8dc;border-color:#e3b505;color:#8a6a00;}
 
-  .knit-comment{display:flex;gap:12px;padding:16px 0;border-bottom:1px solid var(--knit-border);}
+  .knit-comment{display:flex;gap:14px;padding:18px 0;border-bottom:1px solid var(--knit-border);}
   .knit-comment:last-child{border-bottom:none;}
   .knit-comment-body{flex:1;min-width:0;}
-  .knit-comment-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;}
+  .knit-comment-head{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;}
   .knit-comment-head strong{font-size:14.5px;color:var(--knit-text);}
   .knit-comment-head small{color:var(--knit-muted);font-size:12.5px;}
   .knit-comment-body p{margin:0;font-size:14.8px;line-height:1.65;color:#3b4747;}
-  .knit-reply{padding-left:20px;border-left:2px solid var(--knit-border);margin-top:8px;}
+  .knit-reply{padding-left:20px;border-left:2px solid var(--knit-border);margin-top:10px;}
   .knit-reply-toggle{background:none;border:none;color:var(--knit-muted);font-size:13px;font-weight:600;padding:4px 0;cursor:pointer;}
   .knit-reply-toggle:hover{color:var(--knit-primary);}
 
   .knit-sidebar-card{
-    background:#fff;border:1px solid var(--knit-border);border-radius:var(--knit-radius);
-    padding:20px;box-shadow:var(--knit-shadow);margin-bottom:20px;
+    background:#fff;border:1px solid var(--knit-border);border-radius:var(--knit-radius-lg);
+    padding:22px;box-shadow:var(--knit-shadow);margin-bottom:20px;
   }
   .knit-sidebar-card h4{
-    font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
     color:var(--knit-primary);margin:0 0 14px;display:flex;align-items:center;gap:7px;
   }
-  .knit-related-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--knit-border);}
+  .knit-related-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--knit-border);}
   .knit-related-item:last-child{border-bottom:none;}
-  .knit-related-item a{font-size:14.2px;font-weight:600;color:var(--knit-text);line-height:1.4;}
+  .knit-related-item a{font-size:14.2px;font-weight:600;color:var(--knit-text);line-height:1.45;}
   .knit-related-item a:hover{color:var(--knit-primary);}
+  .knit-related-item::before{
+    content:"";flex-shrink:0;width:3px;border-radius:3px;
+    background:linear-gradient(180deg,#057a71,#04a89b);
+    opacity:.35;
+  }
+
+  .knit-comment-form textarea{
+    border-radius:14px;border:1px solid var(--knit-border);
+    padding:14px 16px;font-size:14.5px;width:100%;resize:vertical;
+    transition:border-color .16s ease,box-shadow .16s ease;
+  }
+  .knit-comment-form textarea:focus{
+    outline:none;border-color:var(--knit-primary);
+    box-shadow:0 0 0 4px var(--knit-primary-soft);
+  }
 
   @media(max-width:900px){
     .knit-article-layout{grid-template-columns:1fr;}
-    .knit-article-inner{padding:28px 22px 24px;}
-    .knit-article h1{font-size:28px;}
-    .knit-action-bar{padding:18px 22px 22px;}
+    .knit-article-inner{padding:30px 24px 26px;}
+    .knit-article h1{font-size:29px;}
+    .knit-action-bar{padding:18px 24px 24px;}
   }
 </style>
 {% endblock %}
@@ -134,7 +152,7 @@
         <form action="{% url 'share-post' post.id %}" method="POST" class="d-inline">
           {% csrf_token %}
           <button type="submit" class="knit-like-btn {% if user_has_shared %}shared{% endif %}">
-            <i class="bi {% if user_has_shared %}bi-arrow-repeat{% else %}bi-arrow-repeat{% endif %}"></i>
+            <i class="bi bi-arrow-repeat"></i>
             {% if user_has_shared %}Unshare{% else %}Share{% endif %}
           </button>
         </form>
@@ -158,7 +176,7 @@
       {% if user == post.author %}
         <span class="ms-auto d-flex gap-2">
           <a href="{% url 'post-update' post.slug %}" class="knit-like-btn"><i class="bi bi-pencil"></i> Edit</a>
-          <a href="{% url 'post-delete' post.slug %}" class="knit-like-btn" style="border-color:#e0546a;color:#e0546a;"><i class="bi bi-trash"></i> Delete</a>
+          <a href="{% url 'post-delete' post.slug %}" class="knit-like-btn" style="border-color:rgba(224,84,106,.5);color:#e0546a;"><i class="bi bi-trash"></i> Delete</a>
         </span>
       {% endif %}
     </div>
@@ -194,12 +212,6 @@
         {% endfor %}
       </div>
     {% endif %}
-
-    <div class="knit-sidebar-card">
-      <h4><i class="bi bi-rss"></i> Subscribe</h4>
-      <p class="text-muted" style="font-size:14px;line-height:1.6;margin:0 0 12px;">Get new posts delivered by RSS.</p>
-      <a href="{% url 'post-feed' %}" class="btn-knit-outline w-100 justify-content-center">RSS feed</a>
-    </div>
   </aside>
 </div>
 
@@ -208,11 +220,11 @@
   <h3 class="knit-card-title"><i class="bi bi-chat-square-text"></i> Comments ({{ post.comments.count }})</h3>
 
   {% if user.is_authenticated %}
-    <form action="{% url 'add-comment' post.id %}" method="POST" class="mb-4">
+    <form action="{% url 'add-comment' post.id %}" method="POST" class="mb-4 knit-comment-form">
       {% csrf_token %}
       <input type="hidden" name="parent" value="" />
       {{ comment_form.content }}
-      <button type="submit" class="btn-knit mt-2"><i class="bi bi-send"></i> Post comment</button>
+      <button type="submit" class="btn-knit mt-3"><i class="bi bi-send"></i> Post comment</button>
     </form>
   {% else %}
     <div class="alert alert-light border mb-4">
@@ -242,10 +254,10 @@
 
           {% if user.is_authenticated %}
             <button class="knit-reply-toggle" data-target="reply-{{ comment.id }}">↩ Reply</button>
-            <form id="reply-{{ comment.id }}" action="{% url 'add-comment' post.id %}" method="POST" class="mt-2" style="display:none;">
+            <form id="reply-{{ comment.id }}" action="{% url 'add-comment' post.id %}" method="POST" class="mt-2 knit-comment-form" style="display:none;">
               {% csrf_token %}
               <input type="hidden" name="parent" value="{{ comment.id }}" />
-              <textarea name="content" class="form-control" rows="2" placeholder="Reply to {{ comment.author.username }}..." required></textarea>
+              <textarea name="content" rows="2" placeholder="Reply to {{ comment.author.username }}..." required></textarea>
               <button type="submit" class="btn-knit mt-2"><i class="bi bi-send"></i> Reply</button>
             </form>
           {% endif %}

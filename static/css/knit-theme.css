@@ -1,0 +1,223 @@
+/* KnitBlog theme — loaded AFTER base.html styles and page-level <style> blocks,
+   so it overrides them without touching any template markup.
+   Direction: calm editorial. Teal is an accent, not a wallpaper. */
+
+:root{
+  --knit-primary:#066b63;
+  --knit-primary-dark:#04524c;
+  --knit-primary-light:#066b63;
+  --knit-primary-soft:rgba(6,107,99,.09);
+  --knit-primary-softer:rgba(6,107,99,.04);
+  --knit-tint:#f0f5f4;
+  --knit-tint-deep:#e2ecea;
+  --knit-text:#15201e;
+  --knit-muted:#586664;
+  --knit-border:#e1e8e6;
+  --knit-radius:12px;
+  --knit-shadow:none;
+  --knit-shadow-lg:0 8px 24px rgba(21,32,30,.08);
+  --knit-gradient:var(--knit-primary);          /* kills every gradient that uses the token */
+  --knit-line-strong:#b9c6c3;
+  --font-ui:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --font-display:"Newsreader",Georgia,"Times New Roman",serif;
+}
+
+html,body{background:#f6f8f7;font-family:var(--font-ui);font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+a{text-underline-offset:3px;}
+:focus-visible{outline:2px solid var(--knit-primary);outline-offset:2px;}
+.knit-main{padding:32px 0 24px;}
+
+/* ---------- Type ---------- */
+.knit-main h1,.knit-hero-text h1,.knit-page-title,.knit-article h1,.knit-auth-card h1,
+.knit-signup-form h1,.knit-display,.knit-wordmark,.knit-page-header h1,.knit-form-head h1,
+.knit-section-head h2,.knit-post-card h2,.knit-post h3,.knit-repost-inner h4,.knit-footer-brand h2{
+  font-family:var(--font-display);letter-spacing:-.01em;
+}
+.knit-main h1{font-weight:600 !important;}
+.knit-hero-text h1{font-size:48px;font-weight:600;line-height:1.1;}
+.knit-hero-text h1 span{color:inherit;}
+.knit-section-head h2{font-size:26px;font-weight:600;padding-left:0;}
+.knit-section-head h2::before{display:none;}
+.knit-section-head p{margin-left:0;}
+.knit-sidebar-card h4,.knit-section-label,.knit-footer-col h3{
+  text-transform:none;letter-spacing:0;font-size:14px;font-weight:700;color:var(--knit-text);
+}
+
+/* ---------- Navbar ---------- */
+.knit-navbar{padding:10px 0;border-bottom:1px solid var(--knit-border);background:rgba(255,255,255,.94);}
+.knit-navbar::before{display:none;}
+.knit-navbar .navbar-brand{
+  color:var(--knit-text) !important;font-family:var(--font-display);
+  font-size:25px;font-weight:700;letter-spacing:-.02em;
+}
+.knit-navbar .navbar-brand i{font-size:22px;color:var(--knit-primary);}
+.knit-nav-link{color:var(--knit-muted) !important;font-size:14.5px;border-radius:8px;padding:8px 12px !important;}
+.knit-nav-link:hover{background:var(--knit-primary-soft);color:var(--knit-primary) !important;}
+.knit-nav-link.active{background:var(--knit-primary-soft);color:var(--knit-primary) !important;box-shadow:none;}
+.knit-search-input{border-radius:8px;background:var(--knit-tint);border-color:transparent;}
+.knit-search-input:focus{background:#fff;border-color:var(--knit-primary);}
+.knit-avatar-nav{background:var(--knit-primary-soft);color:var(--knit-primary);}
+.dropdown-menu{border:1px solid var(--knit-border) !important;box-shadow:var(--knit-shadow-lg) !important;border-radius:10px !important;}
+
+/* ---------- Buttons ---------- */
+.btn-knit{background:var(--knit-primary);border-radius:8px;padding:9px 16px;font-size:14.5px;box-shadow:none;}
+.btn-knit:hover{background:var(--knit-primary-dark);transform:none;box-shadow:none;filter:none;color:#fff;}
+.btn-knit-outline{background:#fff;border:1px solid var(--knit-line-strong);color:var(--knit-text);border-radius:8px;padding:8px 15px;}
+.btn-knit-outline:hover{background:var(--knit-primary-softer);border-color:var(--knit-primary);color:var(--knit-primary);transform:none;box-shadow:none;}
+.knit-auth-button{border-radius:8px !important;}
+.knit-auth-button:hover{transform:none !important;box-shadow:none !important;}
+
+/* ---------- Surfaces: borders, not shadows ---------- */
+.knit-card,.knitting-card,.knit-sidebar-card,.knit-post,.knit-repost,.knit-feature,
+.knit-profile-band,.knit-article,.knitting-sidebar,.knit-hero{
+  box-shadow:none !important;border:1px solid var(--knit-border);border-radius:var(--knit-radius);
+}
+.knit-hero{border-radius:16px;}
+.knit-card:hover,.knit-feature:hover{box-shadow:none;transform:none;}
+.knit-card-accent::before{display:none;}
+.knit-card-title i{background:var(--knit-primary-soft);color:var(--knit-primary);border-radius:8px;}
+
+/* ---------- Page headers (dashboard, post form) ---------- */
+.knit-page-header,.knit-form-head{
+  background:transparent;color:var(--knit-text);box-shadow:none;border-radius:0;
+  padding:0 0 18px;border-bottom:1px solid var(--knit-border);margin-bottom:8px;
+}
+.knit-page-header h1,.knit-form-head h1{color:var(--knit-text);font-size:30px;}
+.knit-page-header h1 i{color:var(--knit-primary);}
+.knit-page-header p,.knit-form-head p{color:var(--knit-muted);}
+
+/* ---------- Dashboard sidebar ---------- */
+.knitting-sidebar{padding:10px;top:84px;}
+.knitting-sidebar-title{
+  background:transparent;color:var(--knit-muted);margin:0 0 6px;padding:6px 12px 10px;
+  text-transform:none;letter-spacing:0;font-size:13px;font-weight:700;
+  border-bottom:1px solid var(--knit-border);
+}
+.knitting-sidebar a{border-radius:8px;font-size:14.5px;}
+.knitting-sidebar a.active{background:var(--knit-primary-soft);color:var(--knit-primary);box-shadow:none;font-weight:700;}
+.knitting-sidebar a.active i{color:var(--knit-primary);}
+
+/* ---------- Post cards ---------- */
+.knit-post-card{border-radius:var(--knit-radius);box-shadow:none;transition:border-color .18s ease;}
+.knit-post-card:hover{transform:none;box-shadow:none;border-color:var(--knit-line-strong);}
+.knit-post-card:hover .knit-post-card-media img{transform:none;}
+.knit-post-card-media{height:auto;aspect-ratio:16/9;}
+.knit-post-card h2{font-size:21px;font-weight:600;line-height:1.3;}
+.knit-post-card h2 a:hover{color:var(--knit-text);text-decoration:underline;}
+.knit-post-card p{font-size:14.5px;}
+.knit-post-card-body{padding:18px 20px;}
+
+/* ---------- Chips, avatars, tabs ---------- */
+.knit-chip{border-radius:6px;padding:3px 10px;font-size:12.5px;}
+.knit-stat-chip{border-radius:6px;}
+.knit-avatar-xs,.knit-avatar-sm{background:var(--knit-primary-soft);color:var(--knit-primary);}
+.knit-avatar-lg{background:var(--knit-primary-soft);color:var(--knit-primary);border:1px solid var(--knit-border);box-shadow:none;}
+.knit-tab{border-radius:8px;}
+.knit-tab.active{background:var(--knit-primary);box-shadow:none;}
+.knit-pagination .current{background:var(--knit-primary);box-shadow:none;}
+.knit-pagination a,.knit-pagination span{border-radius:8px;}
+
+/* ---------- Reading experience ---------- */
+.knit-article h1{font-size:40px;font-weight:600;}
+.knit-article-body{font-family:var(--font-display);font-size:19px;line-height:1.75;max-width:66ch;color:#26302e;}
+.knit-article-body h1,.knit-article-body h2,.knit-article-body h3{font-family:var(--font-ui);}
+.knit-article-body blockquote{border-radius:0;border-left:3px solid var(--knit-primary);}
+.knit-like-btn{border-radius:8px;font-size:14px;padding:8px 14px;}
+.knit-like-btn:hover{background:var(--knit-primary-softer);}
+
+/* ---------- Forms ---------- */
+.form-control,.form-select{border-radius:8px;border-color:var(--knit-line-strong);padding:10px 12px;}
+.form-label{font-size:13.5px;}
+.ql-toolbar.ql-snow,.ql-container.ql-snow{border-color:var(--knit-line-strong);}
+.ql-toolbar.ql-snow{border-radius:8px 8px 0 0;}
+.ql-container.ql-snow{border-radius:0 0 8px 8px;}
+
+/* ---------- Auth pages ---------- */
+.knit-auth-card,.knit-auth-split,.knit-signup-card{
+  border:1px solid var(--knit-border);border-radius:16px;
+  box-shadow:0 12px 32px rgba(21,32,30,.06) !important;
+}
+.knit-auth-brand,.knit-signup-brand{background:var(--knit-primary) !important;}
+.knit-wordmark{font-size:44px;font-weight:600;}
+.knit-auth-icon{background:var(--knit-primary-soft) !important;color:var(--knit-primary) !important;}
+.knit-auth-card h1,.knit-signup-form h1,.knit-display{font-weight:600;}
+
+/* ---------- Footer ---------- */
+.knit-footer{
+  margin-top:64px;padding:48px 0 0;border-radius:0;box-shadow:none;
+  background:#fff;border-top:1px solid var(--knit-border);
+}
+.knit-footer::before{display:none;}
+.knit-footer-content{max-width:1180px;margin:0 auto;padding:0 18px;}
+.knit-footer-brand h2{font-size:24px;font-weight:700;color:var(--knit-text);}
+.knit-footer-col h3{padding-bottom:0;margin-bottom:12px;}
+.knit-footer-col h3::after{display:none;}
+.knit-footer-bottom{
+  margin:40px 0 0;background:transparent;border-top:1px solid var(--knit-border);
+  padding:18px max(18px,calc((100% - 1144px)/2));
+}
+.knit-footer-bottom p:last-child{color:var(--knit-muted);font-weight:500;}
+
+@media (max-width:900px){
+  .knit-hero-text h1{font-size:34px;}
+  .knit-article h1{font-size:30px;}
+  .knit-footer{padding-top:36px;}
+  .knit-footer-bottom{margin-left:0;margin-right:0;padding-left:18px;padding-right:18px;}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none !important;animation:none !important;}
+}
+
+/* ---------- v2: navigation clarity ---------- */
+.knitting-sidebar-group{font-size:12px;font-weight:700;color:var(--knit-muted);margin:16px 12px 4px;}
+.knitting-sidebar a{margin-bottom:1px;}
+.knit-badge{background:#c8374d;color:#fff;border-radius:999px;min-width:22px;height:22px;padding:0 7px;
+  display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.knitting-sidebar a.active .knit-badge{background:var(--knit-primary);}
+.knit-navbar .btn-knit{white-space:nowrap;}
+@media(max-width:900px){.knitting-sidebar-group{display:none;}}
+
+/* ---------- v3: fixes + additions ---------- */
+
+/* Tokens the templates already used but nothing defined (they silently resolved to
+   nothing: e.g. borders on .knit-action-btn vanished and .knit-feed-post lost its radius). */
+:root{
+  --knit-text-secondary:#3d4b48;   /* 9.1:1 on white */
+  --knit-text-tertiary:#66736f;    /* 4.9:1 on white, 4.6:1 on page bg (AA) */
+  --knit-border-strong:#b9c6c3;
+  --knit-radius-lg:16px;
+}
+
+/* Class used in templates but never defined */
+.knit-chip-danger{background:rgba(201,48,44,.09);color:#b3261e;}
+.knit-chip-danger:hover{background:#b3261e;color:#fff;}
+button.knit-chip{border:0;cursor:pointer;font-family:inherit;}
+
+/* Logout as a POST <button> that looks like the other footer links */
+.knit-linkbtn{background:none;border:0;padding:0;font:inherit;font-size:14.5px;font-weight:500;color:#5a6665;text-align:left;cursor:pointer;}
+.knit-linkbtn:hover{color:var(--knit-primary);}
+.dropdown-menu form{margin:0;}
+
+/* Notification badge (My Space nav link, Requests tab) */
+.knit-nav-link .knit-badge,.knit-tab .knit-badge{min-width:18px;height:18px;padding:0 5px;font-size:11px;}
+
+/* Pagination ellipsis */
+.knit-pagination .gap{border-color:transparent;background:transparent;min-width:24px;padding:0;color:var(--knit-text-tertiary);}
+
+/* Dashboard overview tiles */
+.knit-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px;}
+.knit-stat-tile{background:#fff;border:1px solid var(--knit-border);border-radius:var(--knit-radius);padding:14px 16px;display:flex;flex-direction:column;}
+.knit-stat-tile b{font-family:var(--font-display);font-size:26px;font-weight:600;line-height:1.15;color:var(--knit-text);}
+.knit-stat-tile span{font-size:12.5px;font-weight:600;color:var(--knit-text-tertiary);}
+
+/* Buttons that are <button> inside forms should not inherit odd defaults */
+.btn-knit,.btn-knit-outline{cursor:pointer;font-family:inherit;text-decoration:none;}
+.btn-knit:disabled,.btn-knit-outline:disabled{opacity:.6;cursor:not-allowed;}
+
+/* Skip link becomes visible on focus (Bootstrap's .visually-hidden-focusable handles the hiding) */
+.visually-hidden-focusable:focus{top:8px;left:8px;border-radius:8px;box-shadow:var(--knit-shadow-lg);}
+
+/* Long words / URLs in user content shouldn't break the layout on phones */
+.knit-article-body,.knit-comment-body p{overflow-wrap:anywhere;}
+.knit-article-body pre{max-width:100%;}
+.knit-article-body table{display:block;overflow-x:auto;}

@@ -1,0 +1,128 @@
+/* KnitBlog redesign — same teal palette, new structure.
+   Load AFTER the <style> block in base.html (see notes). No template logic changes needed.
+   Idea: everything is "stitched". Dashed stitch lines mark what matters; the rest stays flat and quiet. */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap');
+
+:root{
+  --knit-font-display:'Fraunces',Georgia,serif;
+  --knit-font-ui:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --knit-paper:#f4f8f7;            /* page */
+  --knit-stitch:rgba(5,122,113,.38);
+  --knit-radius:10px;
+  --knit-radius-lg:14px;
+  --knit-shadow:none;
+  --knit-shadow-md:0 1px 0 rgba(5,122,113,.08);
+  --knit-shadow-lg:0 1px 0 rgba(5,122,113,.14);
+}
+
+html,body{font-family:var(--knit-font-ui);background:var(--knit-paper);}
+
+/* ---------- Type ---------- */
+h1,h2,.knit-page-title,.knit-wordmark,.knit-display,
+.knit-post-card h2,.knit-post h3,.knit-article h1,
+.knit-hero-text h1,.knit-section-head h2,.knit-signup-form h1,.knit-auth-card h1{
+  font-family:var(--knit-font-display);font-weight:700;letter-spacing:-.02em;
+}
+.knit-hero-text h1 span{background:none;-webkit-text-fill-color:currentColor;color:var(--knit-primary);}
+.knit-article-body{font-family:var(--knit-font-display);font-weight:400;font-size:18px;line-height:1.85;max-width:66ch;}
+.knit-article-body h1,.knit-article-body h2,.knit-article-body h3{font-family:var(--knit-font-display);font-weight:700;}
+
+/* ---------- Navbar: flat, solid, no gradient strip ---------- */
+.knit-navbar{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:1px solid var(--knit-border);}
+.knit-navbar::before{display:none;}
+.knit-navbar .navbar-brand{font-family:var(--knit-font-display);font-size:24px;}
+.knit-navbar .navbar-brand i{background:none;-webkit-text-fill-color:currentColor;color:var(--knit-primary);}
+.knit-nav-link{position:relative;border-radius:8px;}
+.knit-nav-link.active{background:none;}
+.knit-nav-link.active::after{bottom:-11px;width:100%;height:2px;left:0;transform:none;}
+.knit-search-input{border-radius:999px;background:var(--knit-tint);}
+
+/* ---------- Buttons: solid teal, stitched outline ---------- */
+.btn-knit{background:var(--knit-primary);box-shadow:none;border-radius:10px;padding:10px 18px;}
+.btn-knit:hover{background:var(--knit-primary-dark);transform:none;box-shadow:none;filter:none;}
+.btn-knit-outline{border:1.5px dashed var(--knit-stitch);border-radius:10px;background:transparent;}
+.btn-knit-outline:hover{background:var(--knit-primary-soft);color:var(--knit-primary-dark);border-style:solid;transform:none;box-shadow:none;}
+:focus-visible{outline:3px solid var(--knit-primary-light);outline-offset:2px;}
+
+/* ---------- Cards: flat, no hover lift ---------- */
+.knit-card{box-shadow:none;border-radius:var(--knit-radius-lg);}
+.knit-card:hover{box-shadow:none;}
+.knit-card-title i{background:var(--knit-primary-soft);color:var(--knit-primary);box-shadow:none;border-radius:8px;}
+.knit-card-accent::before{display:none;}
+
+/* ---------- Post card: the one memorable element ----------
+   A dashed "stitch" frame sits inside the card and draws in on hover. */
+.knit-post-card{border-radius:var(--knit-radius-lg);box-shadow:none;position:relative;transition:border-color .2s;}
+.knit-post-card:hover{transform:none;box-shadow:none;border-color:var(--knit-primary);}
+.knit-post-card::after{
+  content:"";position:absolute;inset:8px;border:1.5px dashed transparent;border-radius:9px;pointer-events:none;
+  transition:border-color .25s ease;
+}
+.knit-post-card:hover::after{border-color:var(--knit-stitch);}
+.knit-post-card-media{height:180px;}
+.knit-post-card-media::after{display:none;}
+.knit-post-card:hover .knit-post-card-media img{transform:none;}
+.knit-post-card h2{font-size:21px;line-height:1.3;}
+.knit-post-card-meta{border-top:1px dashed var(--knit-border-strong);}
+
+/* ---------- Chips, avatars ---------- */
+.knit-chip{border-radius:6px;font-weight:600;}
+.knit-chip:hover{transform:none;}
+.knit-avatar-xs,.knit-avatar-sm,.knit-avatar-nav,.knit-avatar-lg{background:var(--knit-primary);box-shadow:none;}
+.knit-avatar-lg{border:3px solid #fff;outline:2px dashed var(--knit-stitch);outline-offset:3px;}
+.knit-avatar-lg::after{display:none;}
+
+/* ---------- Section heads: stitched rule instead of gradient bar ---------- */
+.knit-section-head{margin:56px 0 22px;padding-bottom:12px;border-bottom:1.5px dashed var(--knit-border-strong);}
+.knit-section-head h2{padding-left:0;font-size:28px;}
+.knit-section-head h2::before{display:none;}
+.knit-section-head p{margin-left:0;}
+
+/* ---------- Home hero: left-aligned, flat, stitched frame ---------- */
+.knit-hero{border-radius:var(--knit-radius-lg);box-shadow:none;border:1.5px dashed var(--knit-stitch);background:#fff;}
+.knit-hero::before{display:none;}
+.knit-hero-badge{border-radius:6px;text-transform:none;letter-spacing:0;font-size:13px;}
+.knit-hero-text h1{font-size:clamp(36px,5.4vw,60px);line-height:1.05;}
+.knit-feature{box-shadow:none;border-radius:var(--knit-radius-lg);}
+.knit-feature::before{display:none;}
+.knit-feature:hover{transform:none;box-shadow:none;border-color:var(--knit-primary);}
+.knit-feature-icon{border-radius:10px;}
+
+/* ---------- Article page ---------- */
+.knit-article{box-shadow:none;border-radius:var(--knit-radius-lg);}
+.knit-article h1{font-size:clamp(30px,4.4vw,44px);}
+.knit-article-meta{border-bottom:1px dashed var(--knit-border-strong);}
+.knit-action-bar{background:none;border-top:1px dashed var(--knit-border-strong);}
+.knit-like-btn{border-radius:8px;}
+.knit-like-btn:hover{transform:none;}
+.knit-article-body blockquote{border-left:0;border:1.5px dashed var(--knit-stitch);border-radius:10px;font-style:normal;background:var(--knit-primary-softer);}
+.knit-sidebar-card{box-shadow:none;}
+
+/* ---------- Profile ---------- */
+.knit-profile-band{box-shadow:none;border-radius:var(--knit-radius-lg);}
+.knit-profile-band::before{display:none;}
+.knit-tabs{box-shadow:none;border-radius:12px;}
+.knit-tab{border-radius:8px;}
+.knit-tab.active{background:var(--knit-primary);box-shadow:none;}
+.knit-post,.knit-repost{box-shadow:none;}
+.knit-post:hover,.knit-repost:hover{transform:none;box-shadow:none;border-color:var(--knit-primary);}
+
+/* ---------- Auth pages: flat teal panel, no radial blobs ---------- */
+.knit-auth-split,.knit-signup-card,.knit-auth-card{box-shadow:none;border:1.5px dashed var(--knit-stitch);border-radius:var(--knit-radius-lg);}
+.knit-auth-brand,.knit-signup-brand{background:var(--knit-primary);}
+.knit-auth-brand::before,.knit-auth-brand::after,.knit-signup-brand::before,.knit-auth-card::before{display:none;}
+.knit-auth-signup{background:var(--knit-primary);box-shadow:none;border-radius:10px;}
+.knit-auth-button{border-radius:10px;}
+.knit-auth-login{border-radius:10px;}
+
+/* ---------- Forms, pagination, empty states ---------- */
+.form-control,.form-select{border-radius:10px;}
+.knit-pagination a,.knit-pagination span{border-radius:8px;}
+.knit-pagination a:hover{transform:none;}
+.knit-pagination .current{background:var(--knit-primary);box-shadow:none;}
+.knit-empty{border:1.5px dashed var(--knit-border-strong);border-radius:var(--knit-radius-lg);background:transparent;}
+.knit-empty i{opacity:.5;}
+
+/* ---------- Motion: respect user preference ---------- */
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;scroll-behavior:auto !important;}}

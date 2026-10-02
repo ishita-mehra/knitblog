@@ -7,14 +7,22 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
+from django.core.validators import validate_email
 from django.conf import settings
-from django.db.models import Q, Count
+from django.db.models import Q, Count, F
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import (
+    urlsafe_base64_encode,
+    urlsafe_base64_decode,
+    url_has_allowed_host_and_scheme,
+)
 from django.views.decorators.http import require_POST
 import logging
 import traceback
+from datetime import timedelta
+from django.utils import timezone
+from django.db.models.functions import Random
 
 from .models import (
     Profile, Post, FriendRequest, Like, Comment,
@@ -24,6 +32,8 @@ from .forms import (
     ProfileUpdateForm, PostForm, CommentForm, SearchForm,
     PasswordResetRequestForm, SetNewPasswordForm, validate_strong_password,
 )
+
+logger = logging.getLogger(__name__)
 
 
 # =========================================
@@ -35,23 +45,47 @@ def _paginate(request, queryset, per_page=6):
     return paginator.get_page(request.GET.get('page'))
 
 
+def _safe_redirect(request, fallback):
+    """Redirect to Referer if same-origin; otherwise to `fallback` (URL or URL name).
+
+    Prevents open-redirect attacks via a spoofed Referer header.
+    """
+    url = request.META.get('HTTP_REFERER')
+    if url and url_has_allowed_host_and_scheme(
+        url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect(url)
+    return redirect(fallback)
+
+
 def _published_posts():
+    """Posts shown in public feeds/search — ORIGINAL posts only.
+    Shared/repost entries are hidden here and appear only on profiles."""
     return (
         Post.objects
-        .filter(status='published')
+        .filter(status='published', original_post__isnull=True)
         .select_related('author', 'author__profile', 'category')
         .prefetch_related('tags', 'likes', 'comments')
     )
 
 
 def _get_friends(user):
-    """Return a list of User objects who are accepted friends of `user`."""
+    """Return a list of unique User objects who are accepted friends of `user`."""
     freqs = (
         FriendRequest.objects
         .filter((Q(sender=user) | Q(receiver=user)) & Q(status='accepted'))
         .select_related('sender', 'sender__profile', 'receiver', 'receiver__profile')
     )
-    return [fr.receiver if fr.sender == user else fr.sender for fr in freqs]
+    seen = set()
+    friends = []
+    for fr in freqs:
+        other = fr.receiver if fr.sender_id == user.id else fr.sender
+        if other.id not in seen:
+            seen.add(other.id)
+            friends.append(other)
+    return friends
 
 
 # =========================================
@@ -59,7 +93,7 @@ def _get_friends(user):
 # =========================================
 
 def index(request):
-    latest = _published_posts()[:6]
+    latest = _published_posts()[:3]
     categories = Category.objects.annotate(
         n=Count('posts', filter=Q(posts__status='published'))
     ).filter(n__gt=0)[:8]
@@ -129,7 +163,9 @@ def post_detail(request, slug):
         messages.error(request, "This post is not available.")
         return redirect('post-list')
 
-    Post.objects.filter(pk=post.pk).update(views=post.views + 1)
+    # Atomic increment + refresh so the displayed count is current
+    Post.objects.filter(pk=post.pk).update(views=F('views') + 1)
+    post.refresh_from_db(fields=['views'])
 
     top_comments = (
         post.comments.filter(is_approved=True, parent__isnull=True)
@@ -177,9 +213,7 @@ def post_create(request):
                 messages.success(request, "Post created successfully.")
                 return redirect(post.get_absolute_url())
             except Exception as exc:
-                logging.getLogger('django').error(
-                    "Post create failed: %s\n%s", exc, traceback.format_exc()
-                )
+                logger.error("Post create failed: %s\n%s", exc, traceback.format_exc())
                 messages.error(request, f"Could not create post: {exc}")
         else:
             messages.error(request, "Please fix the errors below and try again.")
@@ -202,9 +236,7 @@ def post_update(request, slug):
                 messages.success(request, "Post updated successfully.")
                 return redirect(post.get_absolute_url())
             except Exception as exc:
-                logging.getLogger('django').error(
-                    "Post update failed: %s\n%s", exc, traceback.format_exc()
-                )
+                logger.error("Post update failed: %s\n%s", exc, traceback.format_exc())
                 messages.error(request, f"Could not update post: {exc}")
         else:
             messages.error(request, "Please fix the errors below and try again.")
@@ -270,7 +302,7 @@ def like_post(request, post_id):
         like_qs.delete()
     else:
         Like.objects.create(user=request.user, post=post)
-    return redirect(request.META.get('HTTP_REFERER', post.get_absolute_url()))
+    return _safe_redirect(request, post.get_absolute_url())
 
 
 @login_required
@@ -322,7 +354,7 @@ def share_post(request, post_id):
 
     if original.author == request.user:
         messages.error(request, "You can't share your own post.")
-        return redirect(request.META.get('HTTP_REFERER', original.get_absolute_url()))
+        return _safe_redirect(request, original.get_absolute_url())
 
     existing = Post.objects.filter(
         author=request.user, original_post=original
@@ -343,7 +375,7 @@ def share_post(request, post_id):
         )
         messages.success(request, "Post shared to your profile!")
 
-    return redirect(request.META.get('HTTP_REFERER', original.get_absolute_url()))
+    return _safe_redirect(request, original.get_absolute_url())
 
 
 # =========================================
@@ -363,7 +395,7 @@ def save_post(request, post_id):
         SavedPost.objects.create(user=request.user, post=post)
         messages.success(request, "Saved to your collection.")
 
-    return redirect(request.META.get('HTTP_REFERER', post.get_absolute_url()))
+    return _safe_redirect(request, post.get_absolute_url())
 
 
 # =========================================
@@ -412,14 +444,13 @@ def user_profile(request, username):
                 friend_status = 'received'
                 incoming_request_id = existing.id
 
-    # Friends list is ONLY shown to the profile owner
     my_friends = []
     if request.user == profile_user:
         my_friends = _get_friends(profile_user)
 
     context = {
         'profile_user': profile_user,
-        'user_posts': all_posts,                # kept for backwards compatibility
+        'user_posts': all_posts,
         'original_posts': original_posts,
         'shared_posts': shared_posts,
         'total_posts': original_posts.count(),
@@ -460,6 +491,7 @@ def user_list(request):
 # =========================================
 
 @login_required
+@require_POST
 def send_friend_request(request, user_id):
     receiver = get_object_or_404(User, id=user_id)
     if receiver != request.user:
@@ -476,15 +508,17 @@ def send_friend_request(request, user_id):
 
 
 @login_required
+@require_POST
 def accept_friend_request(request, request_id):
     freq = get_object_or_404(FriendRequest, id=request_id, receiver=request.user)
     freq.status = 'accepted'
     freq.save()
     messages.success(request, f"You are now friends with {freq.sender.username}!")
-    return redirect(request.META.get('HTTP_REFERER', 'knitting-space'))
+    return _safe_redirect(request, 'knitting-space')
 
 
 @login_required
+@require_POST
 def cancel_or_remove_friend(request, user_id):
     target = get_object_or_404(User, id=user_id)
     deleted, _ = FriendRequest.objects.filter(
@@ -493,7 +527,7 @@ def cancel_or_remove_friend(request, user_id):
     ).delete()
     if deleted:
         messages.success(request, "Connection removed.")
-    return redirect(request.META.get('HTTP_REFERER', 'knitting-space'))
+    return _safe_redirect(request, 'knitting-space')
 
 
 # =========================================
@@ -503,12 +537,15 @@ def cancel_or_remove_friend(request, user_id):
 @login_required
 def knitting_space(request):
     section = request.GET.get('section', 'home')
-    edit_mode = request.GET.get('edit') == 'true'
+
+    if section == 'profile':
+        return redirect('profile-detail', username=request.user.username)
 
     profile, _ = Profile.objects.get_or_create(user=request.user)
 
     my_posts = (
-        Post.objects.filter(author=request.user)
+        Post.objects
+        .filter(author=request.user, original_post__isnull=True)
         .select_related('category')
         .prefetch_related('tags', 'likes', 'comments')
         .order_by('-created_at')
@@ -520,7 +557,32 @@ def knitting_space(request):
         .order_by('-created_at')
     )
 
-    # --- LIKES: two lists ---
+    my_friends = _get_friends(request.user)
+    friend_ids = [f.id for f in my_friends]
+
+    one_day_ago = timezone.now() - timedelta(days=1)
+    friend_posts = (
+        Post.objects
+        .filter(
+            author_id__in=friend_ids,
+            status='published',
+            original_post__isnull=True,
+            created_at__gte=one_day_ago,
+        )
+        .select_related('author', 'author__profile', 'category')
+        .prefetch_related('tags', 'likes', 'comments')
+        .order_by('-created_at')[:20]
+    )
+
+    discover_posts = (
+        Post.objects
+        .filter(status='published', original_post__isnull=True)
+        .exclude(author=request.user)
+        .select_related('author', 'author__profile', 'category')
+        .prefetch_related('tags', 'likes', 'comments')
+        .order_by(Random())[:12]
+    )
+
     liked_posts = (
         Post.objects.filter(likes__user=request.user)
         .select_related('author', 'author__profile', 'category')
@@ -535,7 +597,6 @@ def knitting_space(request):
         .order_by('-created_at')[:80]
     )
 
-    # --- SAVED ---
     saved_items = (
         SavedPost.objects.filter(user=request.user)
         .select_related(
@@ -544,25 +605,8 @@ def knitting_space(request):
         .order_by('-created_at')
     )
 
-    # --- FRIENDS ---
-    my_friends = _get_friends(request.user)
-
     users = User.objects.exclude(id=request.user.id).select_related('profile')
 
-    # --- Profile edit ---
-    if request.method == 'POST' and section == 'profile':
-        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=profile)
-        if profile_form.is_valid():
-            profile_form.save()
-            messages.success(request, 'Your profile was updated successfully.')
-            return redirect(f"{reverse('knitting-space')}?section=profile")
-        else:
-            messages.error(request, "Please fix the errors below.")
-            edit_mode = True
-    else:
-        profile_form = ProfileUpdateForm(instance=profile)
-
-    # --- Create post ---
     if request.method == 'POST' and section == 'create-post':
         post_form = PostForm(request.POST, request.FILES)
         if post_form.is_valid():
@@ -574,9 +618,7 @@ def knitting_space(request):
                 messages.success(request, 'Your post was created successfully.')
                 return redirect(f"{reverse('knitting-space')}?section=my-posts")
             except Exception as exc:
-                logging.getLogger('django').error(
-                    "Post create (space) failed: %s\n%s", exc, traceback.format_exc()
-                )
+                logger.error("Post create (space) failed: %s\n%s", exc, traceback.format_exc())
                 messages.error(request, f"Could not create post: {exc}")
         else:
             messages.error(request, "Please fix the errors below and try again.")
@@ -585,9 +627,9 @@ def knitting_space(request):
 
     context = {
         'section': section,
-        'edit_profile': edit_mode,
         'my_posts': my_posts,
-        'profile_posts': my_posts,
+        'friend_posts': friend_posts,
+        'discover_posts': discover_posts,
         'incoming_requests': incoming_requests,
         'liked_posts': liked_posts,
         'likes_received': likes_received,
@@ -595,7 +637,6 @@ def knitting_space(request):
         'my_friends': my_friends,
         'users': users,
         'post_form': post_form,
-        'profile_form': profile_form,
     }
     return render(request, 'knitting_space.html', context)
 
@@ -610,13 +651,22 @@ def get_started(request):
 
 def user_login(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             messages.success(request, f"Welcome back, {user.username}!")
-            return redirect(request.GET.get('next') or 'home')
+
+            next_url = request.GET.get('next')
+            if next_url and url_has_allowed_host_and_scheme(
+                next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            ):
+                return redirect(next_url)
+            return redirect('home')
+
         messages.error(request, "Invalid username or password.")
         return redirect('login')
     return render(request, 'login.html')
@@ -630,11 +680,21 @@ def user_logout(request):
 
 def user_signup(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
+        username = (request.POST.get("username") or "").strip()
+        email = (request.POST.get("email") or "").strip().lower()
+        password = request.POST.get("password") or ""
 
-        if User.objects.filter(username=username).exists():
+        if not username:
+            messages.error(request, "Please choose a username.")
+            return redirect('signup')
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.error(request, "Please enter a valid email address.")
+            return redirect('signup')
+
+        if User.objects.filter(username__iexact=username).exists():
             messages.error(request, "Username already taken. Choose another.")
             return redirect('signup')
 
@@ -664,8 +724,8 @@ def password_reset_request(request):
     if request.method == "POST":
         form = PasswordResetRequestForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
-            user = User.objects.filter(email__iexact=email).first()
+            email = form.cleaned_data['email'].strip()
+            user = User.objects.filter(email__iexact=email, is_active=True).first()
 
             if user is not None:
                 uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
@@ -676,24 +736,38 @@ def password_reset_request(request):
                 )
                 reset_link = request.build_absolute_uri(reset_path)
 
-                send_mail(
-                    subject="Reset your KnitBlog password",
-                    message=(
-                        f"Hi {user.username},\n\n"
-                        "We received a request to reset your KnitBlog password. "
-                        f"Click the link below to choose a new one:\n\n{reset_link}\n\n"
-                        "This link will expire soon for your security. "
-                        "If you didn't request this, you can safely ignore this email."
-                    ),
-                    from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@knitblog.com'),
-                    recipient_list=[email],
-                    fail_silently=True,
-                )
+                try:
+                    send_mail(
+                        subject="Reset your KnitBlog password",
+                        message=(
+                            f"Hi {user.username},\n\n"
+                            "We received a request to reset your KnitBlog password. "
+                            "Click the link below to choose a new one:\n\n"
+                            f"{reset_link}\n\n"
+                            "This link expires in a few hours for your security. "
+                            "If you didn't request this, you can safely ignore this email."
+                        ),
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[email],
+                        fail_silently=False,
+                    )
+                    messages.success(
+                        request,
+                        "We've sent a password reset link to that email. "
+                        "Please check your inbox (and spam folder)."
+                    )
+                except Exception as exc:
+                    logger.exception("Password reset email failed: %s", exc)
+                    messages.error(
+                        request,
+                        "We couldn't send the reset email right now. Please try again shortly."
+                    )
 
-            messages.success(
-                request,
-                "If that email is registered, we've sent a password reset link to it."
-            )
+            else:
+                messages.success(
+                    request,
+                    "If that email is registered, we've sent a password reset link to it."
+                )
             return redirect('login')
     else:
         form = PasswordResetRequestForm()
@@ -702,16 +776,29 @@ def password_reset_request(request):
 
 
 def password_reset_confirm(request, uidb64, token):
+    user = None
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
-    link_is_valid = user is not None and default_token_generator.check_token(user, token)
+    link_is_valid = (
+        user is not None
+        and user.is_active
+        and default_token_generator.check_token(user, token)
+    )
 
     if not link_is_valid:
-        messages.error(request, "This password reset link is invalid or has expired. Please request a new one.")
+        logger.warning(
+            "Invalid password reset link (uidb64=%s, token=%s, user_found=%s)",
+            uidb64, token, user is not None
+        )
+        messages.error(
+            request,
+            "This password reset link is invalid or has expired. "
+            "Please request a new one."
+        )
         return redirect('password-reset')
 
     if request.method == "POST":
@@ -719,7 +806,11 @@ def password_reset_confirm(request, uidb64, token):
         if form.is_valid():
             user.set_password(form.cleaned_data['new_password'])
             user.save()
-            messages.success(request, "Your password has been reset successfully. Please log in.")
+            logger.info("Password reset completed for user %s", user.username)
+            messages.success(
+                request,
+                "Your password has been reset successfully. Please log in."
+            )
             return redirect('login')
     else:
         form = SetNewPasswordForm()

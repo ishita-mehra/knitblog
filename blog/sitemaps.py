@@ -6,8 +6,10 @@ from .models import Post, Category, Tag
 class PostSitemap(Sitemap):
     changefreq = "weekly"
     priority = 0.9
+
     def items(self):
-        return Post.objects.filter(status='published')
+        return Post.objects.filter(status='published', original_post__isnull=True)
+
     def lastmod(self, obj):
         return obj.updated_at
 
@@ -15,6 +17,7 @@ class PostSitemap(Sitemap):
 class CategorySitemap(Sitemap):
     changefreq = "weekly"
     priority = 0.6
+
     def items(self):
         return Category.objects.all()
 
@@ -22,6 +25,7 @@ class CategorySitemap(Sitemap):
 class TagSitemap(Sitemap):
     changefreq = "weekly"
     priority = 0.5
+
     def items(self):
         return Tag.objects.all()
 
@@ -29,7 +33,9 @@ class TagSitemap(Sitemap):
 class StaticSitemap(Sitemap):
     changefreq = "monthly"
     priority = 0.4
+
     def items(self):
         return ['home', 'post-list', 'get-started']
+
     def location(self, item):
         return reverse(item)

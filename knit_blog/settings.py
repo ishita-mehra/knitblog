@@ -1,10 +1,30 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-change-me-in-production'
-DEBUG = True
-ALLOWED_HOSTS = []
+# Load .env if python-dotenv is installed (safe in dev and prod)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / '.env')
+except ImportError:
+    pass
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-in-production')
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') if os.environ.get('ALLOWED_HOSTS') else []
+
+# =========================================
+#   FORCE IPv4 FOR ALL OUTBOUND SOCKETS
+#   Fixes NAT64/ISP issue where Python picks an IPv6 address it can't route.
+# =========================================
+import socket as _socket
+_original_getaddrinfo = _socket.getaddrinfo
+
+def _ipv4_preferred_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+    return _original_getaddrinfo(host, port, _socket.AF_INET, type, proto, flags)
+
+_socket.getaddrinfo = _ipv4_preferred_getaddrinfo
 
 
 # =========================================
@@ -19,16 +39,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Added for KnitBlog features
-    'django.contrib.humanize',   # naturaltime, intcomma, etc.
-    'django.contrib.sitemaps',   # sitemap.xml
+    'django.contrib.humanize',
+    'django.contrib.sitemaps',
 
     'blog',
 ]
 
 
 # =========================================
-#   MIDDLEWARE  (order matters!)
+#   MIDDLEWARE
 # =========================================
 
 MIDDLEWARE = [
@@ -42,7 +61,7 @@ MIDDLEWARE = [
 ]
 
 
-ROOT_URLCONF = 'knit_blog.urls'   # <-- change to your project's urls module name
+ROOT_URLCONF = 'knit_blog.urls'
 
 
 # =========================================
@@ -61,13 +80,15 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
+                'blog.context_processors.notifications',
+                'blog.context_processors.maker_note',      # ← ADD THIS LINE
             ],
         },
     },
 ]
 
 
-WSGI_APPLICATION = 'knit_blog.wsgi.application'   # <-- change to your project name
+WSGI_APPLICATION = 'knit_blog.wsgi.application'
 
 
 # =========================================
@@ -128,8 +149,16 @@ LOGOUT_REDIRECT_URL = 'home'
 
 
 # =========================================
-#   EMAIL (dev — prints to console)
+#   EMAIL — real SMTP (Gmail)
 # =========================================
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@knitblog.com'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = 'itzishita2003@gmail.com'
+EMAIL_TIMEOUT = 15

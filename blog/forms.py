@@ -3,6 +3,7 @@ from django import forms
 from django.utils.text import slugify
 from django.utils.html import strip_tags
 from .models import Profile, Post, Comment, Category, Tag
+from .sanitizer import clean_html
 
 
 PASSWORD_REGEX = re.compile(
@@ -80,6 +81,7 @@ class PostForm(forms.ModelForm):
 
     def clean_content(self):
         content = self.cleaned_data.get('content') or ''
+
         # Quill sends "<p><br></p>" for empty editors — treat that as blank
         blanks = {
             '', '<p><br></p>', '<p><br/></p>', '<p></p>',
@@ -87,7 +89,17 @@ class PostForm(forms.ModelForm):
         }
         if content.strip() in blanks or not strip_tags(content).strip():
             raise forms.ValidationError("Please write some content before publishing.")
-        return content
+
+        # ===== SANITIZE — strips <script>, onerror, javascript:, data: (non-image), etc. =====
+        cleaned = clean_html(content)
+
+        # Re-check that sanitizing didn't reduce it to nothing
+        if not strip_tags(cleaned).strip():
+            raise forms.ValidationError(
+                "Your post content contained only unsafe HTML. "
+                "Please write some text before publishing."
+            )
+        return cleaned
 
     def save_tags(self, post):
         raw = self.cleaned_data.get('tags_input', '') or ''
@@ -122,6 +134,13 @@ class CommentForm(forms.ModelForm):
                 'placeholder': 'Write a comment...',
             }),
         }
+
+    def clean_content(self):
+        content = (self.cleaned_data.get('content') or '').strip()
+        if not content:
+            raise forms.ValidationError("Please write a comment.")
+        # Comments are plain text — strip any HTML the user tries to inject
+        return strip_tags(content)
 
 
 # =========================================

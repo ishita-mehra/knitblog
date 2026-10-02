@@ -9,7 +9,13 @@ class LatestPostsFeed(Feed):
     description = "Fresh writing, thoughts and conversations from the KnitBlog community."
 
     def items(self):
-        return Post.objects.filter(status='published').select_related('author')[:20]
+        return (
+            Post.objects
+            .filter(status='published', original_post__isnull=True)
+            .select_related('author', 'category')
+            .prefetch_related('tags')
+            .order_by('-created_at')[:20]
+        )
 
     def item_title(self, item):
         return item.title

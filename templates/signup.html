@@ -7,15 +7,21 @@
   .knit-signup-page{min-height:calc(100vh - 240px);display:flex;align-items:center;justify-content:center;padding:40px 20px;}
   .knit-signup-card{
     width:100%;max-width:1050px;min-height:560px;display:flex;background:#fff;
-    border-radius:26px;overflow:hidden;box-shadow:0 15px 45px rgba(0,0,0,.12);
+    border-radius:28px;overflow:hidden;box-shadow:0 20px 60px rgba(5,122,113,.16);
   }
   .knit-signup-brand{
     width:45%;background:linear-gradient(150deg,#057a71,#04a89b);
     padding:56px;display:flex;flex-direction:column;justify-content:center;
+    position:relative;overflow:hidden;
   }
-  .knit-wordmark{color:#fff;font-size:52px;font-weight:800;line-height:1;margin-bottom:22px;letter-spacing:-1.5px;}
-  .knit-signup-brand h2{color:#fff;font-size:28px;font-weight:700;line-height:1.25;margin-bottom:18px;}
-  .knit-signup-brand p{max-width:380px;color:rgba(255,255,255,.92);font-size:16.5px;line-height:1.7;margin:0;}
+  .knit-signup-brand::before{
+    content:"";position:absolute;bottom:-80px;left:-80px;
+    width:280px;height:280px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);
+  }
+  .knit-wordmark{color:#fff;font-size:52px;font-weight:800;line-height:1;margin-bottom:22px;letter-spacing:-1.5px;position:relative;z-index:1;}
+  .knit-signup-brand h2{color:#fff;font-size:28px;font-weight:700;line-height:1.25;margin-bottom:18px;position:relative;z-index:1;}
+  .knit-signup-brand p{max-width:380px;color:rgba(255,255,255,.92);font-size:16.5px;line-height:1.7;margin:0;position:relative;z-index:1;}
   .knit-signup-form{width:55%;padding:56px 60px;display:flex;flex-direction:column;justify-content:center;}
   .knit-signup-form h1{color:var(--knit-primary);font-size:34px;font-weight:800;margin:0 0 6px;letter-spacing:-.8px;}
   .knit-signup-subtitle{color:#666;font-size:15.5px;margin-bottom:30px;}
