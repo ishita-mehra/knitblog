@@ -5,7 +5,6 @@ A social blogging platform built with Django. KnitBlog combines the simplicity o
 **Live Demo:** [https://knitblog.com](https://knitblog.com)
 **Author:** Ishita Mehra
 **LinkedIn:** [linkedin.com/in/ishitamehra16](https://www.linkedin.com/in/ishitamehra16)
-**Contact:** itzishita2003@gmail.com
 
 ---
 
@@ -479,9 +478,6 @@ KnitBlog implements several security measures. Highlights:
   - X-Frame-Options `DENY`
   - `CSRF_TRUSTED_ORIGINS` built from `ALLOWED_HOSTS`
 
-### Reporting a vulnerability
-
-If you find a security issue, please email itzishita2003@gmail.com with steps to reproduce. Do not open a public GitHub issue for security vulnerabilities.
 
 ---
 
@@ -554,7 +550,6 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 **Ishita Mehra**
 LinkedIn: [linkedin.com/in/ishitamehra16](https://www.linkedin.com/in/ishitamehra16)
-Email: itzishita2003@gmail.com
 
 If you build something with KnitBlog, or use it as a learning reference, a short note is always appreciated.
 
