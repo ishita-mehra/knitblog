@@ -10,13 +10,29 @@ try:
 except ImportError:
     pass
 
+
+# =========================================
+#   CORE
+# =========================================
+
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-in-production')
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') if os.environ.get('ALLOWED_HOSTS') else []
+
+# ALLOWED_HOSTS accepts a comma-separated list from the env var.
+# Example: ALLOWED_HOSTS=myapp.up.railway.app,www.myapp.com
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get('ALLOWED_HOSTS', '').split(',')
+    if host.strip()
+]
+if DEBUG and not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
 
 # =========================================
 #   FORCE IPv4 FOR ALL OUTBOUND SOCKETS
 #   Fixes NAT64/ISP issue where Python picks an IPv6 address it can't route.
+#   Applies to SMTP, HTTPS, and any other outbound connection.
 # =========================================
 import socket as _socket
 _original_getaddrinfo = _socket.getaddrinfo
@@ -47,11 +63,12 @@ INSTALLED_APPS = [
 
 
 # =========================================
-#   MIDDLEWARE
+#   MIDDLEWARE  (order matters!)
 # =========================================
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',          # <-- ADDED: serves static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -81,7 +98,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
                 'blog.context_processors.notifications',
-                'blog.context_processors.maker_note',      # ← ADD THIS LINE
+                'blog.context_processors.maker_note',
             ],
         },
     },
@@ -93,14 +110,26 @@ WSGI_APPLICATION = 'knit_blog.wsgi.application'
 
 # =========================================
 #   DATABASE
+#   - Local dev: SQLite (default)
+#   - Production: set DATABASE_URL env var → PostgreSQL (Railway/Render)
 # =========================================
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+try:
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+except ImportError:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # =========================================
@@ -138,6 +167,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# WhiteNoise: compress + cache static files with hashed filenames
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 
 # =========================================
 #   AUTH
@@ -152,13 +191,63 @@ LOGOUT_REDIRECT_URL = 'home'
 #   EMAIL — real SMTP (Gmail)
 # =========================================
 
-
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = 'itzishita2003@gmail.com'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'itzishita2003@gmail.com')
 EMAIL_TIMEOUT = 15
+
+
+# =========================================
+#   PRODUCTION SECURITY
+#   These only activate when DEBUG=False.
+# =========================================
+
+if not DEBUG:
+    # --- HTTPS / cookies ---
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # --- HSTS (leave at 1 hour for first deploy; raise once stable) ---
+    SECURE_HSTS_SECONDS = 3600
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # --- Misc hardening ---
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+    X_FRAME_OPTIONS = 'DENY'
+
+    # --- CSRF origins for forms posted from your live domain ---
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://{host}"
+        for host in ALLOWED_HOSTS
+        if host and not host.startswith('127.') and not host.startswith('localhost')
+    ]
+
+    # --- Logging to console so platform logs (Railway/Render) show errors ---
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+    }
